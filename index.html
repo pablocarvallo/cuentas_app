@@ -63,11 +63,25 @@ async function cargarTC() {
   const url = "https://docs.google.com/spreadsheets/d/e/2PACX-1vT5uXYuDRWuBezPr8wkXCc07mT2DaJQxgYgw0z90JDlS58Io7efeB7KhUpOiALhBtjITBJnNUWJHEKt/pub?gid=1170744574&single=true&output=csv";
   const resp = await fetch(url);
   const text = await resp.text();
-  const rows = parseCSV(text).slice(0,15); // A1:D15 o A1:E15
-  const trimmed = rows.map(r => [r[0], r[r.length - 1]]); // primera y última columna
+
+  // Parseo robusto del CSV
+  const rows = parseCSV(text).slice(0,11); // filas 1 a 11
+  const trimmed = rows.map(r => {
+      // Encuentra la última columna que tenga datos
+      let lastCol = r.length - 1;
+      for (let i = r.length - 1; i >= 0; i--) {
+          if (r[i] !== "" && r[i] !== null) {
+              lastCol = i;
+              break;
+          }
+      }
+      return [r[0], r[lastCol]]; // primera columna + última columna con datos
+  });
+
   document.getElementById("tabla_tc").innerHTML =
     trimmed.map(row => "<tr>" + row.map(c => `<td>${c}</td>`).join("") + "</tr>").join("");
 }
+
 
 // Primera carga
 cargarResumen();
