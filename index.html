@@ -44,16 +44,22 @@ td, th {
 }
 td:first-child, th:first-child {
   text-align: left;
-  font-weight: bold; /* primera columna en negrita */
 }
 td:not(:first-child), th:not(:first-child) {
   text-align: right;
 }
-tr:first-child td, tr:first-child th,
-tr:last-child td, tr:last-child th {
-  font-weight: bold; /* primera y última fila en negrita */
-}
 tr:last-child td { border-bottom: none; }
+
+/* Negritas solo para el cuadro principal de TC */
+#tabla_tc tr:first-child td,
+#tabla_tc tr:first-child th,
+#tabla_tc tr:last-child td,
+#tabla_tc tr:last-child th {
+  font-weight: bold;
+}
+#tabla_tc td:first-child, #tabla_tc th:first-child {
+  font-weight: bold;
+}
 </style>
 </head>
 <body>
@@ -103,7 +109,9 @@ async function cargarTC() {
   const text = await resp.text();
 
   const rows = parseCSV(text);
-  const subset = rows.slice(0,11); // A1:D11
+
+  // Cuadro principal: filas 1–11, columnas A y última con datos
+  const subset = rows.slice(0,11);
   const trimmed = subset.map(r => {
     let lastCol = r.length - 1;
     for (let i = r.length - 1; i >= 0; i--) {
@@ -114,19 +122,16 @@ async function cargarTC() {
   document.getElementById("tabla_tc").innerHTML =
     trimmed.map(row => "<tr>" + row.map(c => `<td>${c}</td>`).join("") + "</tr>").join("");
 
-  // Segundo cuadro: A13:B15
+  // Cuadro adicional: filas 13–15, columnas A–B
   const detalle = rows.slice(12,15).map(r => r.slice(0,2));
   document.getElementById("tabla_tc_detalle").innerHTML =
     detalle.map(row => "<tr>" + row.map(c => `<td>${c}</td>`).join("") + "</tr>").join("");
 }
 
+// Cargar al inicio y refrescar cada 5 minutos
 cargarResumen();
 cargarTC();
-
-setInterval(() => {
-  cargarResumen();
-  cargarTC();
-}, 300000);
+setInterval(() => { cargarResumen(); cargarTC(); }, 300000);
 </script>
 </body>
 </html>
