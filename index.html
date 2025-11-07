@@ -189,6 +189,42 @@ async function cargarGas(){
   document.getElementById("tabla_gas").innerHTML=out;
 }
 
+// --- GESTOS DE DESLIZAMIENTO ENTRE VISTAS ---
+let startX = 0;
+let startY = 0;
+const minDistance = 50; // distancia mínima en píxeles para considerar un swipe
+
+document.addEventListener("touchstart", e => {
+  if (e.touches.length === 1) {
+    startX = e.touches[0].clientX;
+    startY = e.touches[0].clientY;
+  }
+});
+
+document.addEventListener("touchend", e => {
+  if (e.changedTouches.length === 1) {
+    const dx = e.changedTouches[0].clientX - startX;
+    const dy = e.changedTouches[0].clientY - startY;
+    if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > minDistance) {
+      // Swipe detectado: negativo = izquierda, positivo = derecha
+      const views = ["view-resumen", "view-tc", "view-gas"];
+      const current = views.findIndex(v => document.getElementById(v).classList.contains("active"));
+      let next = current;
+      if (dx < 0 && current < views.length - 1) next = current + 1;  // izquierda → siguiente
+      else if (dx > 0 && current > 0) next = current - 1;            // derecha → anterior
+      if (next !== current) {
+        // cambiar pestaña activa
+        document.querySelectorAll(".view").forEach(v => v.classList.remove("active"));
+        document.getElementById(views[next]).classList.add("active");
+        const tabs = document.querySelectorAll(".tabbtn");
+        tabs.forEach(b => b.classList.remove("active"));
+        tabs[next].classList.add("active");
+      }
+    }
+  }
+});
+
+
 // Carga inicial y cada 5 minutos
 cargarResumen(); cargarTC(); cargarGas();
 setInterval(()=>{ cargarResumen(); cargarTC(); cargarGas(); },300000);
