@@ -21,7 +21,7 @@
 body{
   font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
   margin:0; background:#fafafa; color:var(--texto);
-  font-size:17px; line-height:1.4; padding-bottom:64px; /* espacio barra inferior */
+  font-size:17px; line-height:1.4; padding-bottom:64px;
 }
 h2{margin:16px 12px 8px; font-size:20px; font-weight:600}
 .table-container{
@@ -32,32 +32,34 @@ table{width:100%; border-collapse:collapse; font-size:17px}
 td,th{border-bottom:1px solid var(--borde); padding:6px 4px}
 tr:last-child td{border-bottom:none}
 
-/* Alineación general: primera columna izquierda, resto derecha */
+/* Alineación general */
 td:first-child, th:first-child{ text-align:left }
 td:not(:first-child), th:not(:first-child){ text-align:right }
 
-/* Resumen y TC-detalle SIN negritas extra (heredan normal) */
-
-/* TC principal: primera/última fila y primera columna en negritas */
+/* TC principal: negritas específicas */
 #tabla_tc tr:first-child td,
 #tabla_tc tr:first-child th,
 #tabla_tc tr:last-child td,
 #tabla_tc tr:last-child th{ font-weight:700 }
 #tabla_tc td:first-child, #tabla_tc th:first-child{ font-weight:700 }
 
-/* GAS: primera columna en negritas y alineada a la derecha; resto derecha sin negritas */
+/* GAS: primera columna derecha y negrita */
 #tabla_gas td:first-child, #tabla_gas th:first-child{
-  text-align:left; font-weight:700;
+  text-align:right; font-weight:700;
 }
 #tabla_gas td:not(:first-child), #tabla_gas th:not(:first-child){
   text-align:right; font-weight:400;
 }
 
-/* Barra inferior (tabs) */
+/* Barra inferior con espacio seguro iPhone */
 .tabbar{
-  position:fixed; left:0; right:0; bottom:0; height:56px;
+  position:fixed; left:0; right:0; bottom:0;
+  height:56px;
   display:flex; justify-content:space-around; align-items:center;
-  background:#fff; border-top:1px solid var(--borde); z-index:10;
+  background:#fff; border-top:1px solid var(--borde);
+  z-index:10;
+  padding-bottom: calc(env(safe-area-inset-bottom) + 6px);
+  box-shadow: 0 -2px 6px rgba(0,0,0,0.05);
 }
 .tabbtn{
   flex:1; height:100%; display:flex; flex-direction:column;
@@ -82,7 +84,7 @@ td:not(:first-child), th:not(:first-child){ text-align:right }
   <div class="table-container"><table id="tabla_resumen"></table></div>
 </div>
 
-<!-- VISTA 2: TC (dos cuadros) -->
+<!-- VISTA 2: TC -->
 <div id="view-tc" class="view">
   <h2>TC</h2>
   <div class="table-container"><table id="tabla_tc"></table></div>
@@ -99,34 +101,27 @@ td:not(:first-child), th:not(:first-child){ text-align:right }
 
 <!-- Barra inferior -->
 <nav class="tabbar" role="tablist" aria-label="Navegación principal">
-  <button class="tabbtn active" role="tab" aria-selected="true" aria-controls="view-resumen" data-target="view-resumen">
-    <!-- home -->
+  <button class="tabbtn active" data-target="view-resumen">
     <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M3 9.5 12 3l9 6.5v9A2.5 2.5 0 0 1 18.5 21h-13A2.5 2.5 0 0 1 3 18.5z"/><path d="M9 21V12h6v9"/></svg>
     <span>Resumen</span>
   </button>
-  <button class="tabbtn" role="tab" aria-selected="false" aria-controls="view-tc" data-target="view-tc">
-    <!-- credit-card -->
+  <button class="tabbtn" data-target="view-tc">
     <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M2 9h20"/></svg>
     <span>TC</span>
   </button>
-  <button class="tabbtn" role="tab" aria-selected="false" aria-controls="view-gas" data-target="view-gas">
-    <!-- bar-chart-3 -->
+  <button class="tabbtn" data-target="view-gas">
     <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M3 3v18h18"/><rect x="7" y="8" width="3" height="7"/><rect x="12" y="5" width="3" height="10"/><rect x="17" y="10" width="3" height="5"/></svg>
     <span>Gas</span>
   </button>
 </nav>
 
 <script>
-// CONFIG
 const SHEET_BASE = "https://docs.google.com/spreadsheets/d/e/2PACX-1vT5uXYuDRWuBezPr8wkXCc07mT2DaJQxgYgw0z90JDlS58Io7efeB7KhUpOiALhBtjITBJnNUWJHEKt/pub";
 const GID_RESUMEN = "189610331";
 const GID_TC      = "1170744574";
 const GID_GAS     = "724590671";
 
-// Utils
 function csvUrl(gid){ return `${SHEET_BASE}?gid=${gid}&single=true&output=csv`; }
-
-// Parser CSV robusto (comillas/espacios)
 function parseCSV(text){
   const lines = text.trim().split("\n");
   return lines.map(line=>{
@@ -143,12 +138,11 @@ function parseCSV(text){
 }
 
 // Tabs
-const tabs = document.querySelectorAll('.tabbtn');
-tabs.forEach(btn=>{
+document.querySelectorAll('.tabbtn').forEach(btn=>{
   btn.addEventListener('click', ()=>{
-    tabs.forEach(b=>{ b.classList.remove('active'); b.setAttribute('aria-selected','false'); });
-    btn.classList.add('active'); btn.setAttribute('aria-selected','true');
-    const target = btn.dataset.target;
+    document.querySelectorAll('.tabbtn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    const target=btn.dataset.target;
     document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
     document.getElementById(target).classList.add('active');
   });
@@ -156,76 +150,48 @@ tabs.forEach(btn=>{
 
 // Cargas
 async function cargarResumen(){
-  const resp = await fetch(csvUrl(GID_RESUMEN));
-  const text = await resp.text();
-  const rows = parseCSV(text);
-  const slice = rows.slice(0,4).map(r=>r.slice(3,7)); // D1:G4
+  const resp=await fetch(csvUrl(GID_RESUMEN));
+  const rows=parseCSV(await resp.text());
+  const slice=rows.slice(0,4).map(r=>r.slice(3,7));
   document.getElementById("tabla_resumen").innerHTML =
     slice.map(row=>"<tr>"+row.map(c=>`<td>${c}</td>`).join("")+"</tr>").join("");
 }
-
 async function cargarTC(){
-  const resp = await fetch(csvUrl(GID_TC));
-  const text = await resp.text();
-  const rows = parseCSV(text);
-
-  // TC principal: A1..fila11 (A + última columna con datos)
-  const top = rows.slice(0,11);
-  const principal = top.map(r=>{
-    let last = r.length-1;
-    for(let i=r.length-1;i>=0;i--){
-      if(r[i] && r[i].trim()!==""){ last=i; break; }
-    }
+  const resp=await fetch(csvUrl(GID_TC));
+  const rows=parseCSV(await resp.text());
+  const top=rows.slice(0,11);
+  const principal=top.map(r=>{
+    let last=r.length-1;
+    for(let i=r.length-1;i>=0;i--){ if(r[i]&&r[i].trim()!==""){ last=i; break; }}
     return [r[0]||"", r[last]||""];
   });
   document.getElementById("tabla_tc").innerHTML =
     principal.map(row=>"<tr>"+row.map(c=>`<td>${c}</td>`).join("")+"</tr>").join("");
-
-  // TC detalle: A13:B15
-  const detalle = rows.slice(12,15).map(r=>r.slice(0,2));
+  const detalle=rows.slice(12,15).map(r=>r.slice(0,2));
   document.getElementById("tabla_tc_detalle").innerHTML =
     detalle.map(row=>"<tr>"+row.map(c=>`<td>${c}</td>`).join("")+"</tr>").join("");
 }
-
-// GAS: filas 1–5, mostrar A + dos últimas columnas con datos (como TC)
 async function cargarGas(){
-  const resp = await fetch(csvUrl(GID_GAS));
-  const text = await resp.text();
-  const rows = parseCSV(text);
-
-  const top = rows.slice(0,5);             // filas 1..5
-  const header = top[0] || [];
-  let last = -1, prev = -1;
-
-  // Detectar dos últimas columnas con datos usando la fila 1 (encabezados),
-  // evitando la columna A (índice 0).
+  const resp=await fetch(csvUrl(GID_GAS));
+  const rows=parseCSV(await resp.text());
+  const top=rows.slice(0,5);
+  const header=top[0]||[];
+  let last=-1,prev=-1;
   for(let i=header.length-1;i>=1;i--){
-    if(header[i] && header[i].trim()!==""){
-      if(last === -1) last = i;
-      else { prev = i; break; }
-    }
+    if(header[i]&&header[i].trim()!==""){ if(last===-1) last=i; else{prev=i; break;} }
   }
-  // Fallbacks conservadores por si hay columnas vacías al final
-  if(last === -1) last = Math.max(1, header.length-1);
-  if(prev === -1) prev = Math.max(1, last-1);
-
-  const out = top.map(r=>{
-    const cA    = r[0]    ?? "";
-    const cPrev = r[prev] ?? "";
-    const cLast = r[last] ?? "";
+  if(last===-1) last=Math.max(1,header.length-1);
+  if(prev===-1) prev=Math.max(1,last-1);
+  const out=top.map(r=>{
+    const cA=r[0]??"", cPrev=r[prev]??"", cLast=r[last]??"";
     return `<tr><td>${cA}</td><td>${cPrev}</td><td>${cLast}</td></tr>`;
   }).join("");
-
-  document.getElementById("tabla_gas").innerHTML = out;
+  document.getElementById("tabla_gas").innerHTML=out;
 }
 
-// Carga inicial
-cargarResumen();
-cargarTC();
-cargarGas();
-
-// Auto-refresh cada 5 minutos
-setInterval(()=>{ cargarResumen(); cargarTC(); cargarGas(); }, 300000);
+// Carga inicial y cada 5 minutos
+cargarResumen(); cargarTC(); cargarGas();
+setInterval(()=>{ cargarResumen(); cargarTC(); cargarGas(); },300000);
 </script>
 </body>
 </html>
