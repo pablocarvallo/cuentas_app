@@ -32,7 +32,6 @@ tr:last-child td { border-bottom: none; }
 function parseCSV(text) {
     const lines = text.trim().split("\n");
     return lines.map(line => {
-        // Maneja comillas y espacios
         const values = [];
         let current = "";
         let insideQuotes = false;
@@ -64,10 +63,9 @@ async function cargarTC() {
   const resp = await fetch(url);
   const text = await resp.text();
 
-  // Parseo robusto del CSV
   const rows = parseCSV(text).slice(0,11); // filas 1 a 11
   const trimmed = rows.map(r => {
-      // Encuentra la última columna que tenga datos
+      // Detecta la última columna con datos en la fila
       let lastCol = r.length - 1;
       for (let i = r.length - 1; i >= 0; i--) {
           if (r[i] !== "" && r[i] !== null) {
@@ -75,13 +73,12 @@ async function cargarTC() {
               break;
           }
       }
-      return [r[0], r[lastCol]]; // primera columna + última columna con datos
+      return [r[0], r[lastCol]]; // primera + última columna con datos
   });
 
   document.getElementById("tabla_tc").innerHTML =
     trimmed.map(row => "<tr>" + row.map(c => `<td>${c}</td>`).join("") + "</tr>").join("");
 }
-
 
 // Primera carga
 cargarResumen();
