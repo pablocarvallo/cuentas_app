@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cuentas</title>
+
+<link rel="manifest" href="manifest.json">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="apple-touch-icon" href="icon_cuentas.png">
+
+<style>
+body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; margin: 12px; background: #fafafa; color: #111; }
+h2 { margin-top: 24px; margin-bottom: 8px; font-size: 18px; font-weight: 600; }
+.table-container { background: white; border-radius: 12px; padding: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 16px; }
+td, th { border-bottom: 1px solid #e5e5e5; padding: 6px 4px; text-align: left; }
+tr:last-child td { border-bottom: none; }
+</style>
+</head>
+<body>
+
+<h2>Resumen</h2>
+<div class="table-container"><table id="tabla_resumen"></table></div>
+
+<h2>TC</h2>
+<div class="table-container"><table id="tabla_tc"></table></div>
+
+<script>
+async function cargarResumen() {
+  const url = "https://docs.google.com/spreadsheets/d/e/2PACX-1vT5uXYuDRWuBezPr8wkXCc07mT2DaJQxgYgw0z90JDlS58Io7efeB7KhUpOiALhBtjITBJnNUWJHEKt/pub?gid=189610331&single=true&output=csv";
+  const resp = await fetch(url);
+  const text = await resp.text();
+  const rows = text.trim().split("\n").map(r => r.split(","));
+  const slice = rows.slice(0,4).map(r => r.slice(3,7));
+  document.getElementById("tabla_resumen").innerHTML =
+    slice.map(row => "<tr>" + row.map(c => `<td>${c}</td>`).join("") + "</tr>").join("");
+}
+
+async function cargarTC() {
+  const url = "https://docs.google.com/spreadsheets/d/e/2PACX-1vT5uXYuDRWuBezPr8wkXCc07mT2DaJQxgYgw0z90JDlS58Io7efeB7KhUpOiALhBtjITBJnNUWJHEKt/pub?gid=1170744574&single=true&output=csv";
+  const resp = await fetch(url);
+  const text = await resp.text();
+  const rows = text.trim().split("\n").map(r => r.split(","));
+  const limited = rows.slice(0,15);
+  const lastCol = limited[0].length - 1;
+  const trimmed = limited.map(r => [r[0], r[lastCol]]);
+  document.getElementById("tabla_tc").innerHTML =
+    trimmed.map(row => "<tr>" + row.map(c => `<td>${c}</td>`).join("") + "</tr>").join("");
+}
+
+cargarResumen();
+cargarTC();
+</script>
+
+</body>
+</html>
