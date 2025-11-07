@@ -63,17 +63,19 @@ async function cargarTC() {
   const resp = await fetch(url);
   const text = await resp.text();
 
-  const rows = parseCSV(text).slice(0,11); // filas 1 a 11
+  // Parseo robusto del CSV
+  const rows = parseCSV(text).slice(0,11); // solo filas 1 a 11
+
   const trimmed = rows.map(r => {
-      // Detecta la última columna con datos en la fila
+      // Encontrar última columna con datos en esta fila (ignorando celdas vacías)
       let lastCol = r.length - 1;
       for (let i = r.length - 1; i >= 0; i--) {
-          if (r[i] !== "" && r[i] !== null) {
+          if (r[i] && r[i].trim() !== "") {
               lastCol = i;
               break;
           }
       }
-      return [r[0], r[lastCol]]; // primera + última columna con datos
+      return [r[0] || "", r[lastCol] || ""]; // primera + última columna
   });
 
   document.getElementById("tabla_tc").innerHTML =
