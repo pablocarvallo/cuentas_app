@@ -225,11 +225,18 @@ async function cargarHijas(){
   const datos=rows.slice(0,2).map(r=>r.slice(0,2));
   if(datos.length<2) return;
   const fila1=`<tr>${datos[0].map(c=>`<td>${c}</td>`).join("")}</tr>`;
-  const fila2=`<tr>${datos[1].map(c=>{
-    const num=parseFloat(c.replace(/,/g,""));
-    const val=isNaN(num)?c: num.toLocaleString("es-CL");
-    return `<td>${val}</td>`;
-  }).join("")}</tr>`;
+const fila2=`<tr>${datos[1].map(c=>{
+  // eliminar espacios y validar formato con punto de miles
+  const texto = c.trim();
+  // si contiene punto como separador de miles, mostrar tal cual
+  if (/^\d{1,3}(\.\d{3})+$/.test(texto)) {
+    return `<td>${texto}</td>`;
+  }
+  // si es número con coma decimal o número normal
+  const num = parseFloat(texto.replace(/\./g,"").replace(",","."));
+  const val = isNaN(num) ? texto : num.toLocaleString("es-CL");
+  return `<td>${val}</td>`;
+}).join("")}</tr>`;
   document.getElementById("tabla_hijas").innerHTML=fila1+fila2;
 }
 
