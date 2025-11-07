@@ -15,7 +15,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; margin: 12px;
 h2 { margin-top: 24px; margin-bottom: 8px; font-size: 18px; font-weight: 600; }
 .table-container { background: white; border-radius: 12px; padding: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); overflow-x: auto; }
 table { width: 100%; border-collapse: collapse; font-size: 16px; }
-td, th { border-bottom: 1px solid #e5e5e5; padding: 6px 4px; text-align: left; }
+td, th { border-bottom: 1px solid #e5e5e5; padding: 6px 4px; text-align: right; } /* alineación a la derecha */
 tr:last-child td { border-bottom: none; }
 </style>
 </head>
@@ -63,11 +63,9 @@ async function cargarTC() {
   const resp = await fetch(url);
   const text = await resp.text();
 
-  // Parseo robusto del CSV
-  const rows = parseCSV(text).slice(0,11); // solo filas 1 a 11
-
+  const rows = parseCSV(text).slice(0,11); // filas 1 a 11
   const trimmed = rows.map(r => {
-      // Encontrar última columna con datos en esta fila (ignorando celdas vacías)
+      // Detecta última columna con datos
       let lastCol = r.length - 1;
       for (let i = r.length - 1; i >= 0; i--) {
           if (r[i] && r[i].trim() !== "") {
