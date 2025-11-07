@@ -11,12 +11,45 @@
 <link rel="apple-touch-icon" href="icon_cuentas.png">
 
 <style>
-body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; margin: 12px; background: #fafafa; color: #111; }
-h2 { margin-top: 24px; margin-bottom: 8px; font-size: 18px; font-weight: 600; }
-.table-container { background: white; border-radius: 12px; padding: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); overflow-x: auto; }
-table { width: 100%; border-collapse: collapse; font-size: 16px; }
-td, th { border-bottom: 1px solid #e5e5e5; padding: 6px 4px; text-align: right; } /* alineación a la derecha */
-tr:last-child td { border-bottom: none; }
+body { 
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
+    margin: 12px; 
+    background: #fafafa; 
+    color: #111; 
+    font-size: 17px; /* legible en móvil */
+    line-height: 1.4;
+}
+h2 { 
+    margin-top: 24px; 
+    margin-bottom: 8px; 
+    font-size: 20px; 
+    font-weight: 600; 
+}
+.table-container { 
+    background: white; 
+    border-radius: 12px; 
+    padding: 12px; 
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08); 
+    overflow-x: auto; 
+}
+table { 
+    width: 100%; 
+    border-collapse: collapse; 
+    font-size: 17px; 
+}
+td, th { 
+    border-bottom: 1px solid #e5e5e5; 
+    padding: 6px 4px; 
+}
+td:first-child, th:first-child { 
+    text-align: left; /* primera columna izquierda */ 
+}
+td:not(:first-child), th:not(:first-child) { 
+    text-align: right; /* resto de columnas derecha */ 
+}
+tr:last-child td { 
+    border-bottom: none; 
+}
 </style>
 </head>
 <body>
