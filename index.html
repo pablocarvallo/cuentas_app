@@ -11,45 +11,49 @@
 <link rel="apple-touch-icon" href="icon_cuentas.png">
 
 <style>
-body { 
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
-    margin: 12px; 
-    background: #fafafa; 
-    color: #111; 
-    font-size: 17px; /* legible en móvil */
-    line-height: 1.4;
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  margin: 12px;
+  background: #fafafa;
+  color: #111;
+  font-size: 17px;
+  line-height: 1.4;
 }
-h2 { 
-    margin-top: 24px; 
-    margin-bottom: 8px; 
-    font-size: 20px; 
-    font-weight: 600; 
+h2 {
+  margin-top: 24px;
+  margin-bottom: 8px;
+  font-size: 20px;
+  font-weight: 600;
 }
-.table-container { 
-    background: white; 
-    border-radius: 12px; 
-    padding: 12px; 
-    box-shadow: 0 2px 8px rgba(0,0,0,0.08); 
-    overflow-x: auto; 
+.table-container {
+  background: white;
+  border-radius: 12px;
+  padding: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  overflow-x: auto;
+  margin-bottom: 24px;
 }
-table { 
-    width: 100%; 
-    border-collapse: collapse; 
-    font-size: 17px; 
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 17px;
 }
-td, th { 
-    border-bottom: 1px solid #e5e5e5; 
-    padding: 6px 4px; 
+td, th {
+  border-bottom: 1px solid #e5e5e5;
+  padding: 6px 4px;
 }
-td:first-child, th:first-child { 
-    text-align: left; /* primera columna izquierda */ 
+td:first-child, th:first-child {
+  text-align: left;
+  font-weight: bold; /* primera columna en negrita */
 }
-td:not(:first-child), th:not(:first-child) { 
-    text-align: right; /* resto de columnas derecha */ 
+td:not(:first-child), th:not(:first-child) {
+  text-align: right;
 }
-tr:last-child td { 
-    border-bottom: none; 
+tr:first-child td, tr:first-child th,
+tr:last-child td, tr:last-child th {
+  font-weight: bold; /* primera y última fila en negrita */
 }
+tr:last-child td { border-bottom: none; }
 </style>
 </head>
 <body>
@@ -60,25 +64,27 @@ tr:last-child td {
 <h2>TC</h2>
 <div class="table-container"><table id="tabla_tc"></table></div>
 
+<h2>TC – detalle adicional</h2>
+<div class="table-container"><table id="tabla_tc_detalle"></table></div>
+
 <script>
-// Función para parsear CSV robustamente
 function parseCSV(text) {
-    const lines = text.trim().split("\n");
-    return lines.map(line => {
-        const values = [];
-        let current = "";
-        let insideQuotes = false;
-        for (let i = 0; i < line.length; i++) {
-            const c = line[i];
-            if (c === '"' && line[i-1] !== '\\') insideQuotes = !insideQuotes;
-            else if (c === ',' && !insideQuotes) {
-                values.push(current.trim().replace(/^"|"$/g,""));
-                current = "";
-            } else current += c;
-        }
+  const lines = text.trim().split("\n");
+  return lines.map(line => {
+    const values = [];
+    let current = "";
+    let insideQuotes = false;
+    for (let i = 0; i < line.length; i++) {
+      const c = line[i];
+      if (c === '"' && line[i-1] !== '\\') insideQuotes = !insideQuotes;
+      else if (c === ',' && !insideQuotes) {
         values.push(current.trim().replace(/^"|"$/g,""));
-        return values;
-    });
+        current = "";
+      } else current += c;
+    }
+    values.push(current.trim().replace(/^"|"$/g,""));
+    return values;
+  });
 }
 
 async function cargarResumen() {
@@ -86,7 +92,7 @@ async function cargarResumen() {
   const resp = await fetch(url);
   const text = await resp.text();
   const rows = parseCSV(text);
-  const slice = rows.slice(0,4).map(r => r.slice(3,7)); // D1:G4
+  const slice = rows.slice(0,4).map(r => r.slice(3,7));
   document.getElementById("tabla_resumen").innerHTML =
     slice.map(row => "<tr>" + row.map(c => `<td>${c}</td>`).join("") + "</tr>").join("");
 }
@@ -96,33 +102,31 @@ async function cargarTC() {
   const resp = await fetch(url);
   const text = await resp.text();
 
-  const rows = parseCSV(text).slice(0,11); // filas 1 a 11
-  const trimmed = rows.map(r => {
-      // Detecta última columna con datos
-      let lastCol = r.length - 1;
-      for (let i = r.length - 1; i >= 0; i--) {
-          if (r[i] && r[i].trim() !== "") {
-              lastCol = i;
-              break;
-          }
-      }
-      return [r[0] || "", r[lastCol] || ""]; // primera + última columna
+  const rows = parseCSV(text);
+  const subset = rows.slice(0,11); // A1:D11
+  const trimmed = subset.map(r => {
+    let lastCol = r.length - 1;
+    for (let i = r.length - 1; i >= 0; i--) {
+      if (r[i] && r[i].trim() !== "") { lastCol = i; break; }
+    }
+    return [r[0] || "", r[lastCol] || ""];
   });
-
   document.getElementById("tabla_tc").innerHTML =
     trimmed.map(row => "<tr>" + row.map(c => `<td>${c}</td>`).join("") + "</tr>").join("");
+
+  // Segundo cuadro: A13:B15
+  const detalle = rows.slice(12,15).map(r => r.slice(0,2));
+  document.getElementById("tabla_tc_detalle").innerHTML =
+    detalle.map(row => "<tr>" + row.map(c => `<td>${c}</td>`).join("") + "</tr>").join("");
 }
 
-// Primera carga
 cargarResumen();
 cargarTC();
 
-// Actualización automática cada 5 minutos
 setInterval(() => {
   cargarResumen();
   cargarTC();
 }, 300000);
-
 </script>
 </body>
 </html>
