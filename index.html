@@ -82,6 +82,18 @@ td:not(:first-child), th:not(:first-child){ text-align:right }
 .view{ display:none; animation:fade .2s ease }
 .view.active{ display:block }
 @keyframes fade{ from{opacity:.6; transform:translateY(4px)} to{opacity:1; transform:none} }
+
+/* --- NUEVO: Transición suave tipo iOS --- */
+.view {
+  transition: transform 0.35s cubic-bezier(0.22, 0.61, 0.36, 1), opacity 0.3s ease;
+  will-change: transform, opacity;
+}
+.view.enter-from-right { transform: translateX(100%); opacity: 0; }
+.view.enter-from-left  { transform: translateX(-100%); opacity: 0; }
+.view.active {
+  transform: translateX(0);
+  opacity: 1;
+}
 </style>
 </head>
 <body>
@@ -221,8 +233,11 @@ async function cargarHijas(){
   document.getElementById("tabla_hijas").innerHTML=fila1+fila2;
 }
 
-// Gesto de swipe
-let startX=0,startY=0;const minDistance=50;
+// --- NUEVO: Gesto de swipe con animación tipo iOS ---
+let startX=0,startY=0;
+const minDistance=50;
+const viewsOrder=["view-resumen","view-tc","view-gas","view-hijas"];
+
 document.addEventListener("touchstart",e=>{
   if(e.touches.length===1){startX=e.touches[0].clientX;startY=e.touches[0].clientY;}
 });
@@ -231,14 +246,26 @@ document.addEventListener("touchend",e=>{
     const dx=e.changedTouches[0].clientX-startX;
     const dy=e.changedTouches[0].clientY-startY;
     if(Math.abs(dx)>Math.abs(dy)&&Math.abs(dx)>minDistance){
-      const views=["view-resumen","view-tc","view-gas","view-hijas"];
-      const current=views.findIndex(v=>document.getElementById(v).classList.contains("active"));
-      let next=current;
-      if(dx<0&&current<views.length-1)next=current+1;
-      else if(dx>0&&current>0)next=current-1;
+      const current=viewsOrder.findIndex(v=>document.getElementById(v).classList.contains("active"));
+      let next=current; let dir=null;
+      if(dx<0&&current<viewsOrder.length-1){next=current+1;dir="left";}
+      else if(dx>0&&current>0){next=current-1;dir="right";}
       if(next!==current){
-        document.querySelectorAll(".view").forEach(v=>v.classList.remove("active"));
-        document.getElementById(views[next]).classList.add("active");
+        const cur=document.getElementById(viewsOrder[current]);
+        const nxt=document.getElementById(viewsOrder[next]);
+        nxt.classList.add(dir==="left"?"enter-from-right":"enter-from-left");
+        nxt.style.display="block";
+        void nxt.offsetWidth;
+        cur.style.transition="transform 0.35s cubic-bezier(0.22, 0.61, 0.36, 1), opacity 0.3s ease";
+        cur.style.transform=dir==="left"?"translateX(-100%)":"translateX(100%)";
+        cur.style.opacity="0";
+        nxt.classList.remove("enter-from-right","enter-from-left");
+        nxt.classList.add("active");
+        setTimeout(()=>{
+          cur.classList.remove("active");
+          cur.style.transform="";cur.style.opacity="";cur.style.transition="";
+          nxt.style.display="";
+        },350);
         const tabs=document.querySelectorAll(".tabbtn");
         tabs.forEach(b=>b.classList.remove("active"));
         tabs[next].classList.add("active");
