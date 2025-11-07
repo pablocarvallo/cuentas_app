@@ -21,7 +21,7 @@
 body{
   font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
   margin:0; background:#fafafa; color:var(--texto);
-  font-size:17px; line-height:1.4; padding-bottom:64px;
+  font-size:17px; line-height:1.4; padding-bottom:64px; /* espacio barra inferior */
 }
 h2{margin:16px 12px 8px; font-size:20px; font-weight:600}
 .table-container{
@@ -30,18 +30,30 @@ h2{margin:16px 12px 8px; font-size:20px; font-weight:600}
 }
 table{width:100%; border-collapse:collapse; font-size:17px}
 td,th{border-bottom:1px solid var(--borde); padding:6px 4px}
-td:first-child, th:first-child{ text-align:left }
-td:not(:first-child), th:not(:first-child){ text-align:right }
 tr:last-child td{border-bottom:none}
 
-/* Negritas SOLO para TC principal */
+/* Alineación general: primera columna izquierda, resto derecha */
+td:first-child, th:first-child{ text-align:left }
+td:not(:first-child), th:not(:first-child){ text-align:right }
+
+/* Resumen y TC-detalle SIN negritas extra (heredan normal) */
+
+/* TC principal: primera/última fila y primera columna en negritas */
 #tabla_tc tr:first-child td,
 #tabla_tc tr:first-child th,
 #tabla_tc tr:last-child td,
 #tabla_tc tr:last-child th{ font-weight:700 }
 #tabla_tc td:first-child, #tabla_tc th:first-child{ font-weight:700 }
 
-/* Tabs inferiores */
+/* GAS: primera columna en negritas y alineada a la derecha; resto derecha sin negritas */
+#tabla_gas td:first-child, #tabla_gas th:first-child{
+  text-align:right; font-weight:700;
+}
+#tabla_gas td:not(:first-child), #tabla_gas th:not(:first-child){
+  text-align:right; font-weight:400;
+}
+
+/* Barra inferior (tabs) */
 .tabbar{
   position:fixed; left:0; right:0; bottom:0; height:56px;
   display:flex; justify-content:space-around; align-items:center;
@@ -56,7 +68,7 @@ tr:last-child td{border-bottom:none}
 .tabbtn.active{ color:var(--azul); background:var(--azul-10) }
 .tabbtn.active svg{ stroke:var(--azul) }
 
-/* Views */
+/* Vistas */
 .view{ display:none; animation:fade .2s ease }
 .view.active{ display:block }
 @keyframes fade{ from{opacity:.6; transform:translateY(4px)} to{opacity:1; transform:none} }
@@ -109,7 +121,7 @@ tr:last-child td{border-bottom:none}
 const SHEET_BASE = "https://docs.google.com/spreadsheets/d/e/2PACX-1vT5uXYuDRWuBezPr8wkXCc07mT2DaJQxgYgw0z90JDlS58Io7efeB7KhUpOiALhBtjITBJnNUWJHEKt/pub";
 const GID_RESUMEN = "189610331";
 const GID_TC      = "1170744574";
-const GID_GAS     = "724590671"; // hoja 'gas'
+const GID_GAS     = "724590671";
 
 // Utils
 function csvUrl(gid){ return `${SHEET_BASE}?gid=${gid}&single=true&output=csv`; }
@@ -175,24 +187,36 @@ async function cargarTC(){
     detalle.map(row=>"<tr>"+row.map(c=>`<td>${c}</td>`).join("")+"</tr>").join("");
 }
 
+// GAS: filas 1–5, mostrar A + dos últimas columnas con datos (como TC)
 async function cargarGas(){
   const resp = await fetch(csvUrl(GID_GAS));
   const text = await resp.text();
   const rows = parseCSV(text);
 
-  // Tomar hasta 6 filas (hoy 5, mañana 6) y hallar última no vacía
-  const max = rows.slice(0,6);
-  let lastRowIdx = 0;
-  for(let i=max.length-1;i>=0;i--){
-    const hasData = max[i].some(v=>v && v.trim()!=="");
-    if(hasData){ lastRowIdx = i; break; }
-  }
-  const firstRow = max[0] || [];
-  const lastRow  = max[lastRowIdx] || [];
+  const top = rows.slice(0,5);             // filas 1..5
+  const header = top[0] || [];
+  let last = -1, prev = -1;
 
-  // Mostrar A1:E? (primer y última fila con datos)
-  const toRow = row => "<tr>"+row.slice(0,5).map(c=>`<td>${c||""}</td>`).join("")+"</tr>";
-  document.getElementById("tabla_gas").innerHTML = toRow(firstRow) + toRow(lastRow);
+  // Detectar dos últimas columnas con datos usando la fila 1 (encabezados),
+  // evitando la columna A (índice 0).
+  for(let i=header.length-1;i>=1;i--){
+    if(header[i] && header[i].trim()!==""){
+      if(last === -1) last = i;
+      else { prev = i; break; }
+    }
+  }
+  // Fallbacks conservadores por si hay columnas vacías al final
+  if(last === -1) last = Math.max(1, header.length-1);
+  if(prev === -1) prev = Math.max(1, last-1);
+
+  const out = top.map(r=>{
+    const cA    = r[0]    ?? "";
+    const cPrev = r[prev] ?? "";
+    const cLast = r[last] ?? "";
+    return `<tr><td>${cA}</td><td>${cPrev}</td><td>${cLast}</td></tr>`;
+  }).join("");
+
+  document.getElementById("tabla_gas").innerHTML = out;
 }
 
 // Carga inicial
