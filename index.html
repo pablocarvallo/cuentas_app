@@ -21,7 +21,7 @@
 body{
   font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
   margin:0; background:#fafafa; color:var(--texto);
-  font-size:17px; line-height:1.4; padding-bottom:80px;
+  font-size:17px; line-height:1.4; padding-bottom:64px;
 }
 h2{margin:16px 12px 8px; font-size:20px; font-weight:600}
 .table-container{
@@ -36,7 +36,7 @@ tr:last-child td{border-bottom:none}
 td:first-child, th:first-child{ text-align:left }
 td:not(:first-child), th:not(:first-child){ text-align:right }
 
-/* TC principal */
+/* TC principal: negritas específicas */
 #tabla_tc tr:first-child td,
 #tabla_tc tr:first-child th,
 #tabla_tc tr:last-child td,
@@ -51,14 +51,14 @@ td:not(:first-child), th:not(:first-child){ text-align:right }
   text-align:right; font-weight:400;
 }
 
-/* Barra inferior */
+/* Barra inferior con espacio seguro iPhone */
 .tabbar{
   position:fixed; left:0; right:0; bottom:0;
   height:64px;
   display:flex; justify-content:space-around; align-items:center;
   background:#fff; border-top:1px solid var(--borde);
   z-index:10;
-  padding-bottom: calc(env(safe-area-inset-bottom) + 20px);
+  padding-bottom: calc(env(safe-area-inset-bottom) + 15px);
   box-shadow: 0 -2px 6px rgba(0,0,0,0.05);
 }
 .tabbtn{
@@ -66,53 +66,37 @@ td:not(:first-child), th:not(:first-child){ text-align:right }
   justify-content:center; align-items:center; gap:4px;
   color:#555; text-decoration:none; font-size:12px;
 }
-.tabbtn svg{ width:22px; height:22px; stroke:#777; transition:stroke .2s ease }
+.tabbtn svg{ width:22px; height:22px; stroke:#777 }
 .tabbtn.active{ color:var(--azul); background:var(--azul-10) }
 .tabbtn.active svg{ stroke:var(--azul) }
 
-/* Transiciones laterales */
-.container {
-  position: relative;
-  overflow: hidden;
-}
-.view {
-  position: absolute;
-  top: 0; left: 0;
-  width: 100%; transition: transform 0.35s ease;
-  opacity: 0; pointer-events: none;
-}
-.view.active {
-  opacity: 1; pointer-events: auto;
-  transform: translateX(0);
-  z-index: 1;
-}
-.view.slide-in-left  { transform: translateX(100%); }
-.view.slide-in-right { transform: translateX(-100%); }
+/* Vistas */
+.view{ display:none; animation:fade .2s ease }
+.view.active{ display:block }
+@keyframes fade{ from{opacity:.6; transform:translateY(4px)} to{opacity:1; transform:none} }
 </style>
 </head>
 <body>
 
-<div class="container">
-  <!-- VISTA 1: Resumen -->
-  <div id="view-resumen" class="view active">
-    <h2>Resumen</h2>
-    <div class="table-container"><table id="tabla_resumen"></table></div>
-  </div>
+<!-- VISTA 1: Resumen -->
+<div id="view-resumen" class="view active">
+  <h2>Resumen</h2>
+  <div class="table-container"><table id="tabla_resumen"></table></div>
+</div>
 
-  <!-- VISTA 2: TC -->
-  <div id="view-tc" class="view">
-    <h2>TC</h2>
-    <div class="table-container"><table id="tabla_tc"></table></div>
+<!-- VISTA 2: TC -->
+<div id="view-tc" class="view">
+  <h2>TC</h2>
+  <div class="table-container"><table id="tabla_tc"></table></div>
 
-    <h2>TC – detalle adicional</h2>
-    <div class="table-container"><table id="tabla_tc_detalle"></table></div>
-  </div>
+  <h2>TC – detalle adicional</h2>
+  <div class="table-container"><table id="tabla_tc_detalle"></table></div>
+</div>
 
-  <!-- VISTA 3: Gas -->
-  <div id="view-gas" class="view">
-    <h2>Gas</h2>
-    <div class="table-container"><table id="tabla_gas"></table></div>
-  </div>
+<!-- VISTA 3: Gas -->
+<div id="view-gas" class="view">
+  <h2>Gas</h2>
+  <div class="table-container"><table id="tabla_gas"></table></div>
 </div>
 
 <!-- Barra inferior -->
@@ -153,37 +137,16 @@ function parseCSV(text){
   });
 }
 
-// Tabs con animación
-const tabs = document.querySelectorAll('.tabbtn');
-const views = ["view-resumen","view-tc","view-gas"];
-tabs.forEach((btn,i)=>{
-  btn.addEventListener('click', ()=>cambiarVista(i));
-});
-
-let currentIndex = 0;
-function cambiarVista(newIndex, dir=0){
-  if(newIndex===currentIndex) return;
-  const currentView=document.getElementById(views[currentIndex]);
-  const nextView=document.getElementById(views[newIndex]);
-  // Animación lateral
-  const slideOutClass = dir>0 ? "slide-in-left" : "slide-in-right";
-  const slideInClass  = dir>0 ? "slide-in-right" : "slide-in-left";
-  currentView.classList.remove("active","slide-in-left","slide-in-right");
-  nextView.classList.remove("slide-in-left","slide-in-right");
-  nextView.classList.add(slideInClass,"active");
-  nextView.style.transform="translateX("+(dir>0?"100%":"-100%")+")";
-  requestAnimationFrame(()=>{
-    nextView.style.transition="transform .35s ease, opacity .3s ease";
-    nextView.style.transform="translateX(0)";
+// Tabs
+document.querySelectorAll('.tabbtn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('.tabbtn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    const target=btn.dataset.target;
+    document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+    document.getElementById(target).classList.add('active');
   });
-  setTimeout(()=>{
-    currentView.classList.remove("active");
-    nextView.style.transition="";
-  },350);
-  tabs.forEach(b=>b.classList.remove("active"));
-  tabs[newIndex].classList.add("active");
-  currentIndex=newIndex;
-}
+});
 
 // Cargas
 async function cargarResumen(){
@@ -226,7 +189,7 @@ async function cargarGas(){
   document.getElementById("tabla_gas").innerHTML=out;
 }
 
-// Swipe lateral
+// Swipe lateral entre vistas
 let startX=0, startY=0;
 const minDist=50;
 document.addEventListener("touchstart",e=>{
@@ -237,17 +200,22 @@ document.addEventListener("touchend",e=>{
     const dx=e.changedTouches[0].clientX-startX;
     const dy=e.changedTouches[0].clientY-startY;
     if(Math.abs(dx)>Math.abs(dy)&&Math.abs(dx)>minDist){
-      let next=currentIndex;
-      if(dx<0&&currentIndex<views.length-1) next=currentIndex+1;
-      else if(dx>0&&currentIndex>0) next=currentIndex-1;
-      if(next!==currentIndex){
-        cambiarVista(next, dx<0?1:-1);
+      const views=["view-resumen","view-tc","view-gas"];
+      const current=views.findIndex(v=>document.getElementById(v).classList.contains("active"));
+      let next=current;
+      if(dx<0&&current<views.length-1) next=current+1;
+      else if(dx>0&&current>0) next=current-1;
+      if(next!==current){
+        document.querySelectorAll(".view").forEach(v=>v.classList.remove("active"));
+        document.getElementById(views[next]).classList.add("active");
+        tabs.forEach(b=>b.classList.remove("active"));
+        tabs[next].classList.add("active");
       }
     }
   }
 });
 
-// Carga inicial + refresco
+// Carga inicial y cada 5 minutos
 cargarResumen(); cargarTC(); cargarGas();
 setInterval(()=>{ cargarResumen(); cargarTC(); cargarGas(); },300000);
 </script>
