@@ -28,12 +28,33 @@ tr:last-child td { border-bottom: none; }
 <div class="table-container"><table id="tabla_tc"></table></div>
 
 <script>
+// Función para parsear CSV robustamente
+function parseCSV(text) {
+    const lines = text.trim().split("\n");
+    return lines.map(line => {
+        // Maneja comillas y espacios
+        const values = [];
+        let current = "";
+        let insideQuotes = false;
+        for (let i = 0; i < line.length; i++) {
+            const c = line[i];
+            if (c === '"' && line[i-1] !== '\\') insideQuotes = !insideQuotes;
+            else if (c === ',' && !insideQuotes) {
+                values.push(current.trim().replace(/^"|"$/g,""));
+                current = "";
+            } else current += c;
+        }
+        values.push(current.trim().replace(/^"|"$/g,""));
+        return values;
+    });
+}
+
 async function cargarResumen() {
   const url = "https://docs.google.com/spreadsheets/d/e/2PACX-1vT5uXYuDRWuBezPr8wkXCc07mT2DaJQxgYgw0z90JDlS58Io7efeB7KhUpOiALhBtjITBJnNUWJHEKt/pub?gid=189610331&single=true&output=csv";
   const resp = await fetch(url);
   const text = await resp.text();
-  const rows = text.trim().split("\n").map(r => r.split(","));
-  const slice = rows.slice(0,4).map(r => r.slice(3,7));
+  const rows = parseCSV(text);
+  const slice = rows.slice(0,4).map(r => r.slice(3,7)); // D1:G4
   document.getElementById("tabla_resumen").innerHTML =
     slice.map(row => "<tr>" + row.map(c => `<td>${c}</td>`).join("") + "</tr>").join("");
 }
@@ -42,17 +63,22 @@ async function cargarTC() {
   const url = "https://docs.google.com/spreadsheets/d/e/2PACX-1vT5uXYuDRWuBezPr8wkXCc07mT2DaJQxgYgw0z90JDlS58Io7efeB7KhUpOiALhBtjITBJnNUWJHEKt/pub?gid=1170744574&single=true&output=csv";
   const resp = await fetch(url);
   const text = await resp.text();
-  const rows = text.trim().split("\n").map(r => r.split(","));
-  const limited = rows.slice(0,15);
-  const lastCol = limited[0].length - 1;
-  const trimmed = limited.map(r => [r[0], r[lastCol]]);
+  const rows = parseCSV(text).slice(0,15); // A1:D15 o A1:E15
+  const trimmed = rows.map(r => [r[0], r[r.length - 1]]); // primera y última columna
   document.getElementById("tabla_tc").innerHTML =
     trimmed.map(row => "<tr>" + row.map(c => `<td>${c}</td>`).join("") + "</tr>").join("");
 }
 
+// Primera carga
 cargarResumen();
 cargarTC();
-</script>
 
+// Actualización automática cada 5 minutos
+setInterval(() => {
+  cargarResumen();
+  cargarTC();
+}, 300000);
+
+</script>
 </body>
 </html>
