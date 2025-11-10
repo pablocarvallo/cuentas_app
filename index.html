@@ -220,18 +220,30 @@ async function cargarGas(){
   document.getElementById("tabla_gas").innerHTML=out;
 }
 async function cargarHijas(){
-  const resp=await fetch(csvUrl(GID_HIJAS));
-  const rows=parseCSV(await resp.text());
-  const datos=rows.slice(0,2).map(r=>r.slice(0,2));
-  if(datos.length<2) return;
-  const fila1=`<tr>${datos[0].map(c=>`<td>${c}</td>`).join("")}</tr>`;
-  const fila2=`<tr>${datos[1].map(c=>{
-    const num=parseFloat(c.replace(/,/g,""));
-    const val=isNaN(num)?c: num.toLocaleString("es-CL");
+  const resp = await fetch(csvUrl(GID_HIJAS));
+  const rows = parseCSV(await resp.text());
+  const datos = rows.slice(0,2).map(r => r.slice(0,2));
+  if(datos.length < 2) return;
+
+  const fila1 = `<tr>${datos[0].map(c => `<td>${c}</td>`).join("")}</tr>`;
+  const fila2 = `<tr>${datos[1].map(c => {
+    const texto = c.trim();
+
+    // 🔹 Si tiene formato con punto como separador de miles, lo dejamos igual
+    if (/^\d{1,3}(\.\d{3})+$/.test(texto)) {
+      return `<td>${texto}</td>`;
+    }
+
+    // 🔹 Si tiene coma decimal (ej. 38,25) o es número sin formato
+    const num = parseFloat(texto.replace(/\./g, "").replace(",", "."));
+    const val = isNaN(num) ? texto : num.toLocaleString("es-CL");
+
     return `<td>${val}</td>`;
   }).join("")}</tr>`;
-  document.getElementById("tabla_hijas").innerHTML=fila1+fila2;
+
+  document.getElementById("tabla_hijas").innerHTML = fila1 + fila2;
 }
+
 
 // --- NUEVO: Gesto de swipe con animación tipo iOS ---
 let startX=0,startY=0;
