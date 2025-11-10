@@ -241,44 +241,86 @@ const fila2=<tr>${datos[1].map(c=>{
 }
 
 // --- NUEVO: Gesto de swipe con animación tipo iOS ---
-let startX=0,startY=0;
-const minDistance=50;
-const viewsOrder=["view-resumen","view-tc","view-gas","view-hijas"];
+// --- SWIPE REALISTA tipo iOS ---
+let startX = 0, startY = 0, currentX = 0, isSwiping = false;
+const minDistance = 80;
+const viewsOrder = ["view-resumen","view-tc","view-gas","view-hijas"];
 
-document.addEventListener("touchstart",e=>{
-  if(e.touches.length===1){startX=e.touches[0].clientX;startY=e.touches[0].clientY;}
-});
-document.addEventListener("touchend",e=>{
-  if(e.changedTouches.length===1){
-    const dx=e.changedTouches[0].clientX-startX;
-    const dy=e.changedTouches[0].clientY-startY;
-    if(Math.abs(dx)>Math.abs(dy)&&Math.abs(dx)>minDistance){
-      const current=viewsOrder.findIndex(v=>document.getElementById(v).classList.contains("active"));
-      let next=current; let dir=null;
-      if(dx<0&&current<viewsOrder.length-1){next=current+1;dir="left";}
-      else if(dx>0&&current>0){next=current-1;dir="right";}
-      if(next!==current){
-        const cur=document.getElementById(viewsOrder[current]);
-        const nxt=document.getElementById(viewsOrder[next]);
-        nxt.classList.add(dir==="left"?"enter-from-right":"enter-from-left");
-        nxt.style.display="block";
-        void nxt.offsetWidth;
-        cur.style.transition="transform 0.35s cubic-bezier(0.22, 0.61, 0.36, 1), opacity 0.3s ease";
-        cur.style.transform=dir==="left"?"translateX(-100%)":"translateX(100%)";
-        cur.style.opacity="0";
-        nxt.classList.remove("enter-from-right","enter-from-left");
-        nxt.classList.add("active");
-        setTimeout(()=>{
-          cur.classList.remove("active");
-          cur.style.transform="";cur.style.opacity="";cur.style.transition="";
-          nxt.style.display="";
-        },350);
-        const tabs=document.querySelectorAll(".tabbtn");
-        tabs.forEach(b=>b.classList.remove("active"));
-        tabs[next].classList.add("active");
-      }
-    }
+document.addEventListener("touchstart", e => {
+  if (e.touches.length === 1) {
+    startX = e.touches[0].clientX;
+    startY = e.touches[0].clientY;
+    isSwiping = true;
+    currentX = startX;
   }
+});
+
+document.addEventListener("touchmove", e => {
+  if (!isSwiping) return;
+  const dx = e.touches[0].clientX - startX;
+  const dy = e.touches[0].clientY - startY;
+  if (Math.abs(dx) < Math.abs(dy)) return; // ignora scroll vertical
+
+  const current = viewsOrder.findIndex(v => document.getElementById(v).classList.contains("active"));
+  let next = null;
+  if (dx < 0 && current < viewsOrder.length - 1) next = current + 1;
+  if (dx > 0 && current > 0) next = current - 1;
+  if (next === null) return;
+
+  const curView = document.getElementById(viewsOrder[current]);
+  const nextView = document.getElementById(viewsOrder[next]);
+  const direction = dx < 0 ? "left" : "right";
+
+  nextView.style.display = "block";
+  nextView.style.transform = `translateX(${dx < 0 ? window.innerWidth + dx : -window.innerWidth + dx}px)`;
+  curView.style.transform = `translateX(${dx}px)`;
+  curView.style.transition = "none";
+  nextView.style.transition = "none";
+});
+
+document.addEventListener("touchend", e => {
+  if (!isSwiping) return;
+  isSwiping = false;
+
+  const dx = e.changedTouches[0].clientX - startX;
+  const current = viewsOrder.findIndex(v => document.getElementById(v).classList.contains("active"));
+  let next = null;
+  let direction = null;
+  if (dx < -minDistance && current < viewsOrder.length - 1) { next = current + 1; direction = "left"; }
+  else if (dx > minDistance && current > 0) { next = current - 1; direction = "right"; }
+
+  const curView = document.getElementById(viewsOrder[current]);
+  if (next === null) {
+    // volver a posición original
+    curView.style.transition = "transform 0.3s cubic-bezier(0.25, 0.8, 0.5, 1)";
+    curView.style.transform = "translateX(0)";
+    viewsOrder.forEach(v => {
+      if (v !== viewsOrder[current]) document.getElementById(v).style.display = "";
+    });
+    return;
+  }
+
+  const nextView = document.getElementById(viewsOrder[next]);
+  const endCur = direction === "left" ? -window.innerWidth : window.innerWidth;
+  const endNext = "0";
+
+  curView.style.transition = "transform 0.35s cubic-bezier(0.22, 0.61, 0.36, 1)";
+  nextView.style.transition = "transform 0.35s cubic-bezier(0.22, 0.61, 0.36, 1)";
+  curView.style.transform = `translateX(${endCur}px)`;
+  nextView.style.transform = `translateX(${endNext})`;
+
+  setTimeout(() => {
+    curView.classList.remove("active");
+    curView.style.transition = "";
+    curView.style.transform = "";
+    curView.style.display = "";
+    nextView.classList.add("active");
+    nextView.style.transition = "";
+    nextView.style.transform = "";
+    const tabs = document.querySelectorAll(".tabbtn");
+    tabs.forEach(b => b.classList.remove("active"));
+    tabs[next].classList.add("active");
+  }, 350);
 });
 
 // Carga inicial y actualización
