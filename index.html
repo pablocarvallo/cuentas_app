@@ -1,578 +1,295 @@
 <!DOCTYPE html>
+
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Finanzas Familiares</title>
-    
-    <!-- Configuración PWA para iOS -->
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Pagos">
-    
-    <!-- Icono solicitado -->
-    <link rel="apple-touch-icon" href="polla.png">
-    <link rel="icon" type="image/png" href="polla.png">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Cuentas</title>
 
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    
-    <!-- React & ReactDOM -->
-    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-    
-    <!-- Babel -->
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    
-    <!-- Lucide Icons -->
-    <script src="https://unpkg.com/lucide@latest"></script>
+<link rel="manifest" href="manifest.json" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<link rel="apple-touch-icon" href="casa.png" />
 
-    <!-- HTML2Canvas para capturas -->
-    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+<style>
+:root{
+  --azul:#4A90E2;
+  --azul-10:#E8F1FC;
+  --texto:#111;
+  --borde:#e5e5e5;
+}
+*{box-sizing:border-box}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+  margin:0; background:#fafafa; color:var(--texto);
+  font-size:17px; line-height:1.4; padding-bottom:64px;
+}
+h2{margin:16px 12px 8px; font-size:20px; font-weight:600}
+.table-container{
+  background:#fff; border-radius:12px; padding:12px; margin:0 12px 16px;
+  box-shadow:0 2px 8px rgba(0,0,0,.08); overflow-x:auto;
+}
+table{width:100%; border-collapse:collapse; font-size:17px}
+td,th{border-bottom:1px solid var(--borde); padding:6px 4px}
+tr:last-child td{border-bottom:none}
 
-    <style>
-        /* Estilos base para sensación nativa */
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: #F2F2F7; /* iOS System Gray 6 */
-            -webkit-tap-highlight-color: transparent;
-            padding-bottom: env(safe-area-inset-bottom);
-        }
-        
-        /* Ocultar scrollbar pero permitir scroll */
-        .no-scrollbar::-webkit-scrollbar {
-            display: none;
-        }
-        .no-scrollbar {
-            -ms-overflow-style: none;
-            scrollbar-width: none;
-        }
+/* Alineación general */
+td:first-child, th:first-child{ text-align:left }
+td:not(:first-child), th:not(:first-child){ text-align:right }
 
-        /* Animación suave estilo iOS */
-        .ios-btn {
-            transition: transform 0.1s ease, opacity 0.2s;
-        }
-        .ios-btn:active {
-            transform: scale(0.96);
-            opacity: 0.8;
-        }
+/* TC principal: negritas específicas */
+#tabla_tc tr:first-child td,
+#tabla_tc tr:first-child th,
+#tabla_tc tr:last-child td,
+#tabla_tc tr:last-child th{ font-weight:700 }
+#tabla_tc td:first-child, #tabla_tc th:first-child{ font-weight:700 }
 
-        /* Input estilo iOS */
-        .ios-input {
-            background-color: #FFFFFF;
-            border-radius: 12px;
-            padding: 16px;
-            font-size: 17px;
-            border: 1px solid #E5E5EA;
-            width: 100%;
-            outline: none;
-            transition: border-color 0.2s;
-        }
-        .ios-input:focus {
-            border-color: #007AFF;
-        }
-        
-        /* Fix para PWA independiente */
-        @media all and (display-mode: standalone) {
-            body {
-                padding-top: env(safe-area-inset-top);
-            }
-        }
-    </style>
+/* GAS: primera columna izquierda y negrita */
+#tabla_gas td:first-child, #tabla_gas th:first-child{
+  text-align:left; font-weight:700;
+}
+#tabla_gas td:not(:first-child), #tabla_gas th:not(:first-child){
+  text-align:right; font-weight:400;
+}
+
+/* HIJAS: estilo especial */
+#tabla_hijas tr:first-child td {
+  font-weight:700; text-align:center;
+}
+#tabla_hijas tr:last-child td {
+  text-align:right;
+}
+
+/* Barra inferior con espacio seguro iPhone */
+.tabbar{
+  position:fixed; left:0; right:0; bottom:0;
+  height:64px;
+  display:flex; justify-content:space-around; align-items:center;
+  background:#fff; border-top:1px solid var(--borde);
+  z-index:10;
+  padding-bottom: calc(env(safe-area-inset-bottom) + 15px);
+  box-shadow: 0 -2px 6px rgba(0,0,0,0.05);
+}
+.tabbtn{
+  flex:1; height:100%; display:flex; flex-direction:column;
+  justify-content:center; align-items:center; gap:4px;
+  color:#555; text-decoration:none; font-size:12px;
+}
+.tabbtn svg{ width:22px; height:22px; stroke:#777 }
+.tabbtn.active{ color:var(--azul); background:var(--azul-10) }
+.tabbtn.active svg{ stroke:var(--azul) }
+
+/* Vistas */
+.view{ display:none; animation:fade .2s ease }
+.view.active{ display:block }
+@keyframes fade{ from{opacity:.6; transform:translateY(4px)} to{opacity:1; transform:none} }
+
+/* --- NUEVO: Transición suave tipo iOS --- */
+.view {
+  transition: transform 0.35s cubic-bezier(0.22, 0.61, 0.36, 1), opacity 0.3s ease;
+  will-change: transform, opacity;
+}
+.view.enter-from-right { transform: translateX(100%); opacity: 0; }
+.view.enter-from-left  { transform: translateX(-100%); opacity: 0; }
+.view.active {
+  transform: translateX(0);
+  opacity: 1;
+}
+</style>
+
 </head>
 <body>
-    <div id="root"></div>
 
-    <script type="text/babel">
-        const { useState, useEffect, useRef } = React;
+<!-- VISTA 1: Resumen -->
+<div id="view-resumen" class="view active">
+  <h2>Resumen</h2>
+  <div class="table-container"><table id="tabla_resumen"></table></div>
+</div>
 
-        // Iconos
-        const WalletIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"/></svg>;
-        const CreditCardIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" x2="22" y1="10" y2="10"/></svg>;
-        const ShareIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" x2="12" y1="2" y2="15"/></svg>;
-        const TrashIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>;
-        const XIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>;
+<!-- VISTA 2: TC -->
+<div id="view-tc" class="view">
+  <h2>TC</h2>
+  <div class="table-container"><table id="tabla_tc"></table></div>
 
-        // Utilidades
-        const formatCurrency = (amount) => {
-            return new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP' }).format(amount);
-        };
+  <h2>TC – detalle adicional</h2>
+  <div class="table-container"><table id="tabla_tc_detalle"></table></div>
+</div>
 
-        const getCurrentMonthYear = () => {
-            const date = new Date();
-            return date.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' });
-        };
+<!-- VISTA 3: Gas -->
+<div id="view-gas" class="view">
+  <h2>Gas</h2>
+  <div class="table-container"><table id="tabla_gas"></table></div>
+</div>
 
-        const App = () => {
-            const [activeTab, setActiveTab] = useState('settlement');
-            const [showReport, setShowReport] = useState(false);
-            
-            // Estado: Liquidación
-            const [transactions, setTransactions] = useState(() => {
-                const saved = localStorage.getItem('transactions');
-                return saved ? JSON.parse(saved) : [];
-            });
-            const [amount, setAmount] = useState('');
-            const [detail, setDetail] = useState('');
-            const [account, setAccount] = useState('Itaú');
+<!-- VISTA 4: Hijas -->
+<div id="view-hijas" class="view">
+  <h2>Hijas</h2>
+  <div class="table-container"><table id="tabla_hijas"></table></div>
+</div>
 
-            // Estado: Deudas
-            const [debtBalance, setDebtBalance] = useState(() => {
-                const saved = localStorage.getItem('debtBalance');
-                return saved ? parseFloat(saved) : 0;
-            });
-            const [debtPayment, setDebtPayment] = useState('');
-            const [debtDetail, setDebtDetail] = useState('');
-            const [initialDebtInput, setInitialDebtInput] = useState('');
-            const [isSettingDebt, setIsSettingDebt] = useState(false);
+<!-- VISTA 5: Mach -->
+<div id="view-mach" class="view">
+  <h2>Mach</h2>
+  <div class="table-container"><table id="tabla_mach"></table></div>
+</div>
 
-            // Persistencia
-            useEffect(() => {
-                localStorage.setItem('transactions', JSON.stringify(transactions));
-            }, [transactions]);
+<!-- Barra inferior -->
+<nav class="tabbar" role="tablist" aria-label="Navegación principal">
+  <button class="tabbtn active" data-target="view-resumen">
+    <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M3 9.5 12 3l9 6.5v9A2.5 2.5 0 0 1 18.5 21h-13A2.5 2.5 0 0 1 3 18.5z"/><path d="M9 21V12h6v9"/></svg>
+    <span>Resumen</span>
+  </button>
+  <button class="tabbtn" data-target="view-tc">
+    <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M2 9h20"/></svg>
+    <span>TC</span>
+  </button>
+  <button class="tabbtn" data-target="view-gas">
+    <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M3 3v18h18"/><rect x="7" y="8" width="3" height="7"/><rect x="12" y="5" width="3" height="10"/><rect x="17" y="10" width="3" height="5"/></svg>
+    <span>Gas</span>
+  </button>
+  <button class="tabbtn" data-target="view-hijas">
+    <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-8 0v2"/><circle cx="12" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M2 21v-2a4 4 0 0 1 3-3.87"/></svg>
+    <span>Hijas</span>
+  </button>
+  <button class="tabbtn" data-target="view-mach">
+    <svg viewBox="0 0 24 24" fill="none" stroke-width="2">
+      <rect x="3" y="4" width="18" height="14" rx="2"/>
+      <path d="M7 8h10M7 12h6"/>
+    </svg>
+    <span>Mach</span>
+  </button>
+</nav>
 
-            useEffect(() => {
-                localStorage.setItem('debtBalance', debtBalance.toString());
-            }, [debtBalance]);
+<script>
+const SHEET_BASE = "https://docs.google.com/spreadsheets/d/e/2PACX-1vT5uXYuDRWuBezPr8wkXCc07mT2DaJQxgYgw0z90JDlS58Io7efeB7KhUpOiALhBtjITBJnNUWJHEKt/pub";
+const GID_RESUMEN = "189610331";
+const GID_TC      = "1170744574";
+const GID_GAS     = "724590671";
+const GID_HIJAS   = "297279343";
+const GID_MACH    = "2026342747";
 
-            // --- Lógica Pestaña 1: Liquidación ---
-            const addTransaction = () => {
-                if (!amount || !detail) return;
-                const newTransaction = {
-                    id: Date.now(),
-                    date: new Date().toISOString(),
-                    amount: parseInt(amount),
-                    detail,
-                    account,
-                    type: 'normal'
-                };
-                setTransactions([...transactions, newTransaction]);
-                setAmount('');
-                setDetail('');
-            };
+function csvUrl(gid){ return `${SHEET_BASE}?gid=${gid}&single=true&output=csv`; }
+function parseCSV(text){
+  const lines = text.trim().split("\n");
+  return lines.map(line=>{
+    const out=[], q='"'; let cur="", inQ=false;
+    for(let i=0;i<line.length;i++){
+      const c=line[i];
+      if(c===q && line[i-1]!=='\\'){ inQ=!inQ; continue; }
+      if(c===',' && !inQ){ out.push(cur.trim().replace(/^"|"$/g,"")); cur=""; continue; }
+      cur+=c;
+    }
+    out.push(cur.trim().replace(/^"|"$/g,""));
+    return out;
+  });
+}
 
-            const resetSettlement = () => {
-                if(confirm('¿Borrar todos los registros de liquidación de este mes? (Esto no afecta los abonos de deuda)')) {
-                    // Mantenemos solo las transacciones de deuda.
-                    setTransactions(prevTransactions => prevTransactions.filter(t => t.type === 'debt')); 
-                }
-            };
+// Tabs
+document.querySelectorAll('.tabbtn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('.tabbtn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    const target=btn.dataset.target;
+    document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+    document.getElementById(target).classList.add('active');
+  });
+});
 
-            // --- Lógica Pestaña 2: Deudas ---
-            const handleSetDebt = () => {
-                if (initialDebtInput) {
-                    setDebtBalance(parseInt(initialDebtInput));
-                    setInitialDebtInput('');
-                    setIsSettingDebt(false);
-                }
-            };
+// Cargas
+async function cargarResumen(){
+  const resp=await fetch(csvUrl(GID_RESUMEN));
+  const rows=parseCSV(await resp.text());
+  const slice=rows.slice(0,4).map(r=>r.slice(3,7));
+  document.getElementById("tabla_resumen").innerHTML =
+    slice.map(row=>"<tr>"+row.map(c=>`<td>${c}</td>`).join("")+"</tr>").join("");
+}
+async function cargarTC(){
+  const resp=await fetch(csvUrl(GID_TC));
+  const rows=parseCSV(await resp.text());
+  const top=rows.slice(0,11);
+  const principal=top.map(r=>{
+    let last=r.length-1;
+    for(let i=r.length-1;i>=0;i--){ if(r[i]&&r[i].trim()!==""){ last=i; break; }}
+    return [r[0]||"", r[last]||""];
+  });
+  document.getElementById("tabla_tc").innerHTML =
+    principal.map(row=>"<tr>"+row.map(c=>`<td>${c}</td>`).join("")+"</tr>").join("");
+  const detalle=rows.slice(12,15).map(r=>r.slice(0,2));
+  document.getElementById("tabla_tc_detalle").innerHTML =
+    detalle.map(row=>"<tr>"+row.map(c=>`<td>${c}</td>`).join("")+"</tr>").join("");
+}
+async function cargarGas(){
+  const resp=await fetch(csvUrl(GID_GAS));
+  const rows=parseCSV(await resp.text());
+  const top=rows.slice(0,5);
+  const header=top[0]||[];
+  let last=-1,prev=-1;
+  for(let i=header.length-1;i>=1;i--){
+    if(header[i]&&header[i].trim()!==""){ if(last===-1) last=i; else{prev=i; break;} }
+  }
+  if(last===-1) last=Math.max(1,header.length-1);
+  if(prev===-1) prev=Math.max(1,last-1);
+  const out=top.map(r=>{
+    const cA=r[0]??"", cPrev=r[prev]??"", cLast=r[last]??"";
+    return `<tr><td>${cA}</td><td>${cPrev}</td><td>${cLast}</td></tr>`;
+  }).join("");
+  document.getElementById("tabla_gas").innerHTML=out;
+}
+async function cargarHijas(){
+  const resp=await fetch(csvUrl(GID_HIJAS));
+  const rows=parseCSV(await resp.text());
+  const datos=rows.slice(0,2).map(r=>r.slice(0,2));
+  if(datos.length<2) return;
+  const fila1=`<tr>${datos[0].map(c=>`<td>${c}</td>`).join("")}</tr>`;
+  const fila2=`<tr>${datos[1].map(c=>{
+    const texto = c.trim();
+    if (/^\d{1,3}(\.\d{3})+$/.test(texto)) { // punto como miles
+      return `<td>${texto}</td>`;
+    }
+    const num = parseFloat(texto.replace(/\./g,"").replace(",","."));
+    const val = isNaN(num) ? texto : num.toLocaleString("es-CL");
+    return `<td>${val}</td>`;
+  }).join("")}</tr>`;
+  document.getElementById("tabla_hijas").innerHTML=fila1+fila2;
+}
+async function cargarMach(){
+  const resp=await fetch(csvUrl(GID_MACH));
+  const rows=parseCSV(await resp.text());
+  const top=rows.slice(0,14).map(r=>r.slice(0,3)); // A1:C14
+  document.getElementById("tabla_mach").innerHTML =
+    top.map(row=>"<tr>"+row.map(c=>`<td>${c??""}</td>`).join("")+"</tr>").join("");
+}
 
-            const payDebt = () => {
-                if (!debtPayment || !debtDetail) return;
-                const payAmount = parseInt(debtPayment);
-                
-                const newBalance = debtBalance - payAmount;
-                setDebtBalance(newBalance);
+// Gesto de swipe
+let startX=0,startY=0;const minDistance=50;
+document.addEventListener("touchstart",e=>{
+  if(e.touches.length===1){startX=e.touches[0].clientX;startY=e.touches[0].clientY;}
+});
+document.addEventListener("touchend",e=>{
+  if(e.changedTouches.length===1){
+    const dx=e.changedTouches[0].clientX-startX;
+    const dy=e.changedTouches[0].clientY-startY;
+    if(Math.abs(dx)>Math.abs(dy)&&Math.abs(dx)>minDistance){
+      const views=["view-resumen","view-tc","view-gas","view-hijas","view-mach"];
+      const current=views.findIndex(v=>document.getElementById(v).classList.contains("active"));
+      let next=current;
+      if(dx<0&&current<views.length-1)next=current+1;
+      else if(dx>0&&current>0)next=current-1;
+      if(next!==current){
+        document.querySelectorAll(".view").forEach(v=>v.classList.remove('active'));
+        document.getElementById(views[next]).classList.add('active');
+        const tabs=document.querySelectorAll(".tabbtn");
+        tabs.forEach(b=>b.classList.remove('active'));
+        tabs[next].classList.add('active');
+      }
+    }
+  }
+});
 
-                // Agregar transacción automática al historial (banco BCH por defecto según ejemplo)
-                const newTransaction = {
-                    id: Date.now(),
-                    date: new Date().toISOString(),
-                    amount: payAmount,
-                    detail: debtDetail,
-                    account: 'BCH', 
-                    type: 'debt',
-                    remainingSnapshot: newBalance // Guardamos el saldo que quedó en ese momento
-                };
-                setTransactions([...transactions, newTransaction]);
+// Carga inicial y actualización
+cargarResumen(); cargarTC(); cargarGas(); cargarHijas(); cargarMach();
+setInterval(()=>{ cargarResumen(); cargarTC(); cargarGas(); cargarHijas(); cargarMach(); },300000);
+</script>
 
-                setDebtPayment('');
-                setDebtDetail('');
-            };
-
-            const resetDebt = () => {
-                if(confirm('¿Reiniciar el saldo de deuda a cero? Esto es irreversible.')) {
-                    setDebtBalance(0);
-                    // Opcionalmente, puedes activar el modo de configuración para ingresar un nuevo saldo inicial
-                    setIsSettingDebt(true); 
-                }
-            };
-
-            // --- Reporte ---
-            const reportRef = useRef(null);
-
-            const generateImage = async () => {
-                if (reportRef.current) {
-                    try {
-                        const canvas = await html2canvas(reportRef.current, {
-                            scale: 2, // Mejor calidad
-                            backgroundColor: '#FFFFFF',
-                            logging: false
-                        });
-                        
-                        canvas.toBlob(async (blob) => {
-                            const file = new File([blob], "resumen_pago.png", { type: "image/png" });
-                            
-                            // Intentar API nativa de compartir
-                            if (navigator.share) {
-                                try {
-                                    await navigator.share({
-                                        files: [file],
-                                        title: 'Resumen de Pagos',
-                                    });
-                                } catch (err) {
-                                    console.log("Error sharing", err);
-                                    // Fallback: abrir imagen en nueva pestaña
-                                    const url = URL.createObjectURL(blob);
-                                    window.open(url, '_blank');
-                                }
-                            } else {
-                                const url = URL.createObjectURL(blob);
-                                window.open(url, '_blank');
-                            }
-                        });
-                    } catch (error) {
-                        // En lugar de alert, usamos console.error o un modal custom.
-                        console.error("Error al generar imagen:", error);
-                        alert("Error al generar imagen. Inténtalo de nuevo."); // Usamos alert por simplicidad en este entorno
-                    }
-                }
-            };
-
-            // Transacciones solo del mes actual
-            const transactionsThisMonth = transactions.filter(t => {
-                const tDate = new Date(t.date);
-                const now = new Date();
-                return tDate.getMonth() === now.getMonth() && tDate.getFullYear() === now.getFullYear();
-            });
-
-            const normalTransactions = transactionsThisMonth
-                .filter(t => t.type === 'normal')
-                .sort((a, b) => new Date(b.date) - new Date(a.date)); // Ordenar por fecha (más reciente primero)
-
-            const itauTransactions = transactionsThisMonth.filter(t => t.account === 'Itaú');
-            const bchTransactions = transactionsThisMonth.filter(t => t.account === 'BCH');
-
-            const totalItau = itauTransactions.reduce((acc, curr) => acc + curr.amount, 0);
-            const totalBch = bchTransactions.reduce((acc, curr) => acc + curr.amount, 0);
-
-            return (
-                <div className="h-screen flex flex-col bg-slate-50">
-                    
-                    {/* Header Dinámico */}
-                    <div className="pt-14 pb-4 px-6 bg-white/80 backdrop-blur-md sticky top-0 z-10 border-b border-slate-200 flex justify-between items-center">
-                        <h1 className="text-3xl font-bold text-slate-800 tracking-tight">
-                            {activeTab === 'settlement' ? 'Liquidación' : 'Deudas'}
-                        </h1>
-                        {activeTab === 'settlement' && (
-                            <button 
-                                onClick={() => setShowReport(true)}
-                                className="text-blue-600 font-semibold text-lg ios-btn"
-                            >
-                                Reporte
-                            </button>
-                        )}
-                    </div>
-
-                    {/* Contenido Principal */}
-                    <div className="flex-1 overflow-y-auto no-scrollbar pb-32 px-4 pt-6">
-                        
-                        {/* Pestaña 1: Liquidación */}
-                        {activeTab === 'settlement' && (
-                            <div className="space-y-6">
-                                {/* Formulario de Liquidación */}
-                                <div className="bg-white p-5 rounded-3xl shadow-sm border border-slate-100">
-                                    <label className="block text-sm font-medium text-slate-500 mb-2 ml-1">Monto a pagar</label>
-                                    <div className="relative mb-4">
-                                        <span className="absolute left-4 top-4 text-slate-400 text-lg">$</span>
-                                        <input 
-                                            type="number" 
-                                            value={amount}
-                                            onChange={(e) => setAmount(e.target.value)}
-                                            className="ios-input pl-8 font-semibold text-slate-800"
-                                            placeholder="0"
-                                        />
-                                    </div>
-
-                                    <label className="block text-sm font-medium text-slate-500 mb-2 ml-1">Destino</label>
-                                    <div className="grid grid-cols-2 gap-3 mb-4">
-                                        <button 
-                                            onClick={() => setAccount('Itaú')}
-                                            className={`py-3 rounded-xl font-medium transition-all ${account === 'Itaú' ? 'bg-orange-500 text-white shadow-md transform scale-105' : 'bg-slate-100 text-slate-500'}`}
-                                        >
-                                            Itaú
-                                        </button>
-                                        <button 
-                                            onClick={() => setAccount('BCH')}
-                                            className={`py-3 rounded-xl font-medium transition-all ${account === 'BCH' ? 'bg-blue-600 text-white shadow-md transform scale-105' : 'bg-slate-100 text-slate-500'}`}
-                                        >
-                                            BCH
-                                        </button>
-                                    </div>
-
-                                    <label className="block text-sm font-medium text-slate-500 mb-2 ml-1">Detalle</label>
-                                    <input 
-                                        type="text" 
-                                        value={detail}
-                                        onChange={(e) => setDetail(e.target.value)}
-                                        className="ios-input mb-6"
-                                        placeholder="Ej: Compras Supermercado"
-                                    />
-
-                                    <button 
-                                        onClick={addTransaction}
-                                        disabled={!amount || !detail}
-                                        className="w-full bg-slate-900 text-white py-4 rounded-2xl font-semibold text-lg shadow-lg ios-btn disabled:opacity-50"
-                                    >
-                                        Agregar Pago
-                                    </button>
-                                </div>
-                                
-                                {/* Historial de Pagos del Mes (Nueva Sección para feedback) */}
-                                <div className="bg-white p-5 rounded-3xl shadow-sm border border-slate-100">
-                                    <h3 className="text-xl font-bold text-slate-800 mb-4">Pagos Registrados ({getCurrentMonthYear()})</h3>
-                                    <ul className="space-y-3">
-                                        {normalTransactions.map(t => (
-                                            <li key={t.id} className="flex justify-between items-center text-sm border-b border-gray-100 pb-3 last:border-b-0">
-                                                <div className="flex flex-col">
-                                                    <span className="text-gray-700 font-medium">{t.detail}</span>
-                                                    <span className={`text-xs font-semibold ${t.account === 'Itaú' ? 'text-orange-500' : 'text-blue-600'}`}>
-                                                        {t.account}
-                                                    </span>
-                                                </div>
-                                                <span className="font-bold text-lg">{formatCurrency(t.amount)}</span>
-                                            </li>
-                                        ))}
-                                        {normalTransactions.length === 0 && (
-                                            <li className="text-center text-gray-400 italic py-4">Aún no hay pagos de liquidación este mes.</li>
-                                        )}
-                                    </ul>
-                                </div>
-
-                                <div className="flex justify-center">
-                                    <button 
-                                        onClick={resetSettlement}
-                                        className="text-red-500 flex items-center space-x-2 px-4 py-2 rounded-full bg-red-50 text-sm font-medium ios-btn"
-                                    >
-                                        <TrashIcon size={16} />
-                                        <span>Resetear Liquidación</span>
-                                    </button>
-                                </div>
-                                
-                                <div className="h-10"></div> {/* Espaciador */}
-                            </div>
-                        )}
-
-                        {/* Pestaña 2: Deudas */}
-                        {activeTab === 'debt' && (
-                            <div className="space-y-6">
-                                {/* Tarjeta de Saldo Actual */}
-                                <div className="bg-gradient-to-br from-indigo-600 to-blue-700 p-6 rounded-3xl shadow-lg text-white relative overflow-hidden">
-                                    <div className="absolute top-0 right-0 w-32 h-32 bg-white opacity-10 rounded-full transform translate-x-10 -translate-y-10"></div>
-                                    <h2 className="text-indigo-100 font-medium text-sm mb-1">Deuda Total Pendiente</h2>
-                                    <div className="text-4xl font-bold tracking-tight mb-4">
-                                        {formatCurrency(debtBalance)}
-                                    </div>
-                                    
-                                    {debtBalance === 0 && !isSettingDebt && (
-                                        <button 
-                                            onClick={() => setIsSettingDebt(true)}
-                                            className="text-xs bg-white/20 px-3 py-1 rounded-full text-white backdrop-blur-sm ios-btn"
-                                        >
-                                            Establecer saldo inicial
-                                        </button>
-                                    )}
-                                </div>
-
-                                {isSettingDebt && (
-                                    <div className="bg-white p-5 rounded-3xl shadow-sm border border-slate-100 animate-fade-in-up">
-                                        <label className="block text-sm font-medium text-slate-500 mb-2 ml-1">Saldo Inicial de Deuda</label>
-                                        <input 
-                                            type="number" 
-                                            value={initialDebtInput}
-                                            onChange={(e) => setInitialDebtInput(e.target.value)}
-                                            className="ios-input mb-4"
-                                            placeholder="Ingresa el monto total"
-                                        />
-                                        <button 
-                                            onClick={handleSetDebt}
-                                            className="w-full bg-indigo-600 text-white py-3 rounded-2xl font-semibold ios-btn"
-                                        >
-                                            Guardar Saldo
-                                        </button>
-                                        <button 
-                                            onClick={() => setIsSettingDebt(false)}
-                                            className="w-full mt-2 text-slate-500 py-2 rounded-2xl font-semibold ios-btn"
-                                        >
-                                            Cancelar
-                                        </button>
-                                    </div>
-                                )}
-
-                                <div className="bg-white p-5 rounded-3xl shadow-sm border border-slate-100">
-                                    <h3 className="text-lg font-bold text-slate-800 mb-4">Registrar Abono</h3>
-                                    
-                                    <label className="block text-sm font-medium text-slate-500 mb-2 ml-1">Monto a pagar</label>
-                                    <div className="relative mb-4">
-                                        <span className="absolute left-4 top-4 text-slate-400 text-lg">$</span>
-                                        <input 
-                                            type="number" 
-                                            value={debtPayment}
-                                            onChange={(e) => setDebtPayment(e.target.value)}
-                                            className="ios-input pl-8 font-semibold text-slate-800"
-                                            placeholder="0"
-                                        />
-                                    </div>
-
-                                    <label className="block text-sm font-medium text-slate-500 mb-2 ml-1">Detalle</label>
-                                    <input 
-                                        type="text" 
-                                        value={debtDetail}
-                                        onChange={(e) => setDebtDetail(e.target.value)}
-                                        className="ios-input mb-6"
-                                        placeholder="Ej: Abono Marzo"
-                                    />
-
-                                    <button 
-                                        onClick={payDebt}
-                                        disabled={!debtPayment || !debtDetail || debtBalance <= 0 || isSettingDebt}
-                                        className="w-full bg-indigo-600 text-white py-4 rounded-2xl font-semibold text-lg shadow-lg ios-btn disabled:opacity-50 disabled:bg-slate-300"
-                                    >
-                                        Descontar Deuda
-                                    </button>
-                                </div>
-
-                                <div className="flex justify-center">
-                                    <button 
-                                        onClick={resetDebt}
-                                        className="text-red-500 flex items-center space-x-2 px-4 py-2 rounded-full bg-red-50 text-sm font-medium ios-btn"
-                                    >
-                                        <TrashIcon size={16} />
-                                        <span>Reiniciar Deuda</span>
-                                    </button>
-                                </div>
-                                <div className="h-10"></div>
-                            </div>
-                        )}
-                    </div>
-
-                    {/* Barra de Navegación Inferior Estilo iOS 18 */}
-                    <div className="fixed bottom-0 left-0 right-0 z-20">
-                        {/* Gradiente para suavizar el corte */}
-                        <div className="h-12 bg-gradient-to-t from-[#F2F2F7] to-transparent pointer-events-none"></div>
-                        
-                        <div className="bg-white/80 backdrop-blur-xl border-t border-slate-200 pb-[calc(env(safe-area-inset-bottom)+10px)] pt-3 px-6 flex justify-around items-center">
-                            <button 
-                                onClick={() => setActiveTab('settlement')}
-                                className={`flex flex-col items-center space-y-1 transition-all duration-300 ${activeTab === 'settlement' ? 'text-blue-600 -translate-y-1' : 'text-slate-400'}`}
-                            >
-                                <div className={`p-2 rounded-xl transition-all ${activeTab === 'settlement' ? 'bg-blue-100' : 'bg-transparent'}`}>
-                                    <CreditCardIcon />
-                                </div>
-                                <span className="text-[10px] font-semibold">Liquidación</span>
-                            </button>
-
-                            <button 
-                                onClick={() => setActiveTab('debt')}
-                                className={`flex flex-col items-center space-y-1 transition-all duration-300 ${activeTab === 'debt' ? 'text-indigo-600 -translate-y-1' : 'text-slate-400'}`}
-                            >
-                                <div className={`p-2 rounded-xl transition-all ${activeTab === 'debt' ? 'bg-indigo-100' : 'bg-transparent'}`}>
-                                    <WalletIcon />
-                                </div>
-                                <span className="text-[10px] font-semibold">Deudas</span>
-                            </button>
-                        </div>
-                    </div>
-
-                    {/* Modal de Reporte */}
-                    {showReport && (
-                        <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-end sm:items-center justify-center p-4">
-                            <div className="bg-white w-full max-w-md rounded-3xl max-h-[90vh] overflow-y-auto flex flex-col shadow-2xl animate-slide-up">
-                                <div className="p-4 border-b border-gray-100 flex justify-between items-center bg-gray-50 rounded-t-3xl">
-                                    <h3 className="font-bold text-lg text-gray-800">Vista Previa</h3>
-                                    <button onClick={() => setShowReport(false)} className="p-2 bg-gray-200 rounded-full text-gray-600 ios-btn">
-                                        <XIcon size={20} />
-                                    </button>
-                                </div>
-                                
-                                {/* Área Capturable */}
-                                <div ref={reportRef} className="p-8 bg-white text-slate-800">
-                                    <div className="text-center mb-8">
-                                        <h2 className="text-2xl font-bold uppercase tracking-wide text-slate-900 mb-1">{getCurrentMonthYear()}</h2>
-                                        <p className="text-sm text-slate-400">Resumen de Pagos</p>
-                                    </div>
-
-                                    {/* Sección Itaú */}
-                                    <div className="mb-6">
-                                        <div className="flex justify-between items-center mb-3 border-b-2 border-orange-100 pb-2">
-                                            <h3 className="font-bold text-orange-500 text-lg">Banco Itaú</h3>
-                                            <span className="text-xs font-semibold bg-orange-100 text-orange-600 px-2 py-1 rounded-lg">
-                                                Total: {formatCurrency(totalItau)}
-                                            </span>
-                                        </div>
-                                        <ul className="space-y-3">
-                                            {itauTransactions.length === 0 && <li className="text-gray-400 italic text-sm">Sin movimientos</li>}
-                                            {itauTransactions.map(t => (
-                                                <li key={t.id} className="flex justify-between text-sm items-start">
-                                                    <span className="text-gray-600 max-w-[70%]">{t.detail}</span>
-                                                    <span className="font-medium text-gray-900">{formatCurrency(t.amount)}</span>
-                                                </li>
-                                            ))}
-                                        </ul>
-                                    </div>
-
-                                    {/* Sección BCH */}
-                                    <div>
-                                        <div className="flex justify-between items-center mb-3 border-b-2 border-blue-100 pb-2">
-                                            <h3 className="font-bold text-blue-600 text-lg">BCH</h3>
-                                            <span className="text-xs font-semibold bg-blue-100 text-blue-600 px-2 py-1 rounded-lg">
-                                                Total: {formatCurrency(totalBch)}
-                                            </span>
-                                        </div>
-                                        <ul className="space-y-3">
-                                            {bchTransactions.length === 0 && <li className="text-gray-400 italic text-sm">Sin movimientos</li>}
-                                            {bchTransactions.map(t => (
-                                                <li key={t.id} className="flex justify-between text-sm items-start">
-                                                    <div className="flex flex-col max-w-[70%]">
-                                                        <span className="text-gray-600">
-                                                            {t.detail}
-                                                            {t.type === 'debt' && (
-                                                                <span className="block text-xs text-indigo-500 font-medium mt-0.5">
-                                                                    (pendiente: {formatCurrency(t.remainingSnapshot)})
-                                                                </span>
-                                                            )}
-                                                        </span>
-                                                    </div>
-                                                    <span className="font-medium text-gray-900">{formatCurrency(t.amount)}</span>
-                                                </li>
-                                            ))}
-                                        </ul>
-                                    </div>
-
-                                    <div className="mt-8 pt-4 border-t border-dashed border-gray-300 flex justify-between items-center">
-                                        <span className="text-sm font-bold text-gray-500">TOTAL GENERAL</span>
-                                        <span className="text-xl font-bold text-slate-900">{formatCurrency(totalItau + totalBch)}</span>
-                                    </div>
-                                </div>
-
-                                <div className="p-4 bg-gray-50 rounded-b-3xl">
-                                    <button 
-                                        onClick={generateImage}
-                                        className="w-full bg-blue-600 text-white py-4 rounded-xl font-semibold flex items-center justify-center space-x-2 ios-btn shadow-blue-200 shadow-lg"
-                                    >
-                                        <ShareIcon size={20} />
-                                        <span>Compartir Resumen</span>
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    )}
-                </div>
-            );
-        };
-
-        const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(<App />);
-    </script>
 </body>
 </html>
