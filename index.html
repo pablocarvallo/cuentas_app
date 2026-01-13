@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html lang="es">
 <head>
 <meta charset="UTF-8" />
@@ -25,18 +26,41 @@ body{
 }
 h2{margin:16px 12px 8px; font-size:20px; font-weight:600}
 .table-container{
-  background:#fff;
-  border-radius:12px; padding:12px; margin:0 12px 16px;
+  background:#fff; border-radius:12px; padding:12px; margin:0 12px 16px;
   box-shadow:0 2px 8px rgba(0,0,0,.08); overflow-x:auto;
 }
-table{width:100%; border-collapse:collapse; font-size:15px}
+table{width:100%; border-collapse:collapse; font-size:17px}
 td,th{border-bottom:1px solid var(--borde); padding:6px 4px}
 tr:last-child td{border-bottom:none}
-th{background:#f8f8f8; font-weight:700}
 
+/* Alineación general */
 td:first-child, th:first-child{ text-align:left }
 td:not(:first-child), th:not(:first-child){ text-align:right }
 
+/* TC principal: negritas específicas */
+#tabla_tc tr:first-child td,
+#tabla_tc tr:first-child th,
+#tabla_tc tr:last-child td,
+#tabla_tc tr:last-child th{ font-weight:700 }
+#tabla_tc td:first-child, #tabla_tc th:first-child{ font-weight:700 }
+
+/* GAS: primera columna izquierda y negrita */
+#tabla_gas td:first-child, #tabla_gas th:first-child{
+  text-align:left; font-weight:700;
+}
+#tabla_gas td:not(:first-child), #tabla_gas th:not(:first-child){
+  text-align:right; font-weight:400;
+}
+
+/* HIJAS: estilo especial */
+#tabla_hijas tr:first-child td {
+  font-weight:700; text-align:center;
+}
+#tabla_hijas tr:last-child td {
+  text-align:right;
+}
+
+/* Barra inferior con espacio seguro iPhone */
 .tabbar{
   position:fixed; left:0; right:0; bottom:0;
   height:64px;
@@ -49,44 +73,68 @@ td:not(:first-child), th:not(:first-child){ text-align:right }
 .tabbtn{
   flex:1; height:100%; display:flex; flex-direction:column;
   justify-content:center; align-items:center; gap:4px;
-  color:#555;
-  text-decoration:none; font-size:11px;
-  background:none; border:none;
+  color:#555; text-decoration:none; font-size:12px;
 }
 .tabbtn svg{ width:22px; height:22px; stroke:#777 }
 .tabbtn.active{ color:var(--azul); background:var(--azul-10) }
 .tabbtn.active svg{ stroke:var(--azul) }
 
+/* Vistas */
 .view{ display:none; animation:fade .2s ease }
 .view.active{ display:block }
 @keyframes fade{ from{opacity:.6; transform:translateY(4px)} to{opacity:1; transform:none} }
+
+/* --- NUEVO: Transición suave tipo iOS --- */
+.view {
+  transition: transform 0.35s cubic-bezier(0.22, 0.61, 0.36, 1), opacity 0.3s ease;
+  will-change: transform, opacity;
+}
+.view.enter-from-right { transform: translateX(100%); opacity: 0; }
+.view.enter-from-left  { transform: translateX(-100%); opacity: 0; }
+.view.active {
+  transform: translateX(0);
+  opacity: 1;
+}
 </style>
+
 </head>
 <body>
 
+<!-- VISTA 1: Resumen -->
 <div id="view-resumen" class="view active">
   <h2>Resumen</h2>
   <div class="table-container"><table id="tabla_resumen"></table></div>
 </div>
 
+<!-- VISTA 2: TC -->
 <div id="view-tc" class="view">
   <h2>TC</h2>
   <div class="table-container"><table id="tabla_tc"></table></div>
+
   <h2>TC – detalle adicional</h2>
   <div class="table-container"><table id="tabla_tc_detalle"></table></div>
 </div>
 
-<div id="view-compras" class="view">
-  <h2>Compras Master</h2>
-  <div class="table-container"><table id="tabla_compras"></table></div>
+<!-- VISTA 3: Gas -->
+<div id="view-gas" class="view">
+  <h2>Gas</h2>
+  <div class="table-container"><table id="tabla_gas"></table></div>
 </div>
 
-<div id="view-compras-tc" class="view">
-  <h2>Compras TC</h2>
-  <div class="table-container"><table id="tabla_compras_tc"></table></div>
+<!-- VISTA 4: Hijas -->
+<div id="view-hijas" class="view">
+  <h2>Hijas</h2>
+  <div class="table-container"><table id="tabla_hijas"></table></div>
 </div>
 
-<nav class="tabbar">
+<!-- VISTA 5: Mach -->
+<div id="view-mach" class="view">
+  <h2>Mach</h2>
+  <div class="table-container"><table id="tabla_mach"></table></div>
+</div>
+
+<!-- Barra inferior -->
+<nav class="tabbar" role="tablist" aria-label="Navegación principal">
   <button class="tabbtn active" data-target="view-resumen">
     <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M3 9.5 12 3l9 6.5v9A2.5 2.5 0 0 1 18.5 21h-13A2.5 2.5 0 0 1 3 18.5z"/><path d="M9 21V12h6v9"/></svg>
     <span>Resumen</span>
@@ -95,27 +143,34 @@ td:not(:first-child), th:not(:first-child){ text-align:right }
     <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M2 9h20"/></svg>
     <span>TC</span>
   </button>
-  <button class="tabbtn" data-target="view-compras">
-    <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
-    <span>Compras</span>
+  <button class="tabbtn" data-target="view-gas">
+    <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M3 3v18h18"/><rect x="7" y="8" width="3" height="7"/><rect x="12" y="5" width="3" height="10"/><rect x="17" y="10" width="3" height="5"/></svg>
+    <span>Gas</span>
   </button>
-  <button class="tabbtn" data-target="view-compras-tc">
-    <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M9 11V6a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v5M9 11H7a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-5a2 2 0 0 0-2-2h-2M9 11v4m6-4v4"/></svg>
-    <span>Compras TC</span>
+  <button class="tabbtn" data-target="view-hijas">
+    <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-8 0v2"/><circle cx="12" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M2 21v-2a4 4 0 0 1 3-3.87"/></svg>
+    <span>Hijas</span>
+  </button>
+  <button class="tabbtn" data-target="view-mach">
+    <svg viewBox="0 0 24 24" fill="none" stroke-width="2">
+      <rect x="3" y="4" width="18" height="14" rx="2"/>
+      <path d="M7 8h10M7 12h6"/>
+    </svg>
+    <span>Mach</span>
   </button>
 </nav>
 
 <script>
 const SHEET_BASE = "https://docs.google.com/spreadsheets/d/e/2PACX-1vT5uXYuDRWuBezPr8wkXCc07mT2DaJQxgYgw0z90JDlS58Io7efeB7KhUpOiALhBtjITBJnNUWJHEKt/pub";
-[cite_start]const GID_RESUMEN    = "189610331"; [cite: 10]
-[cite_start]const GID_TC         = "1170744574"; [cite: 10]
-[cite_start]const GID_COMPRAS    = "0"; [cite: 10]
-const GID_COMPRAS_TC = "878224959";
+const GID_RESUMEN = "189610331";
+const GID_TC      = "1170744574";
+const GID_GAS     = "724590671";
+const GID_HIJAS   = "297279343";
+const GID_MACH    = "2026342747";
 
-function csvUrl(gid){ return `${SHEET_BASE}?gid=${gid}&single=true&output=csv`; [cite_start]} [cite: 12]
-
+function csvUrl(gid){ return `${SHEET_BASE}?gid=${gid}&single=true&output=csv`; }
 function parseCSV(text){
-  [cite_start]const lines = text.trim().split("\n"); [cite: 12]
+  const lines = text.trim().split("\n");
   return lines.map(line=>{
     const out=[], q='"'; let cur="", inQ=false;
     for(let i=0;i<line.length;i++){
@@ -126,75 +181,115 @@ function parseCSV(text){
     }
     out.push(cur.trim().replace(/^"|"$/g,""));
     return out;
-  [cite_start]}); [cite: 12]
+  });
 }
 
-// Navegación
+// Tabs
 document.querySelectorAll('.tabbtn').forEach(btn=>{
   btn.addEventListener('click', ()=>{
     document.querySelectorAll('.tabbtn').forEach(b=>b.classList.remove('active'));
     btn.classList.add('active');
+    const target=btn.dataset.target;
     document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
-    document.getElementById(btn.dataset.target).classList.add('active');
+    document.getElementById(target).classList.add('active');
   });
-[cite_start]}); [cite: 12]
+});
 
+// Cargas
 async function cargarResumen(){
-  [cite_start]const resp=await fetch(csvUrl(GID_RESUMEN)); [cite: 13]
-  [cite_start]const rows=parseCSV(await resp.text()); [cite: 13]
-  [cite_start]const slice=rows.slice(0,7).map(r=>r.slice(3,5)); [cite: 13]
-  document.getElementById("tabla_resumen").innerHTML = 
-    [cite_start]slice.map(row=>"<tr>"+row.map(c=>`<td>${c}</td>`).join("")+"</tr>").join(""); [cite: 13]
+  const resp=await fetch(csvUrl(GID_RESUMEN));
+  const rows=parseCSV(await resp.text());
+  const slice=rows.slice(0,7).map(r=>r.slice(3,5));
+  document.getElementById("tabla_resumen").innerHTML =
+    slice.map(row=>"<tr>"+row.map(c=>`<td>${c}</td>`).join("")+"</tr>").join("");
 }
-
 async function cargarTC(){
-  [cite_start]const resp=await fetch(csvUrl(GID_TC)); [cite: 14]
-  [cite_start]const rows=parseCSV(await resp.text()); [cite: 14]
-  [cite_start]const top=rows.slice(0,11).map(r=>[r[0]||"", r[r.length-1]||""]); [cite: 14]
-  document.getElementById("tabla_tc").innerHTML = 
-    [cite_start]top.map(row=>"<tr>"+row.map(c=>`<td>${c}</td>`).join("")+"</tr>").join(""); [cite: 14]
+  const resp=await fetch(csvUrl(GID_TC));
+  const rows=parseCSV(await resp.text());
+  const top=rows.slice(0,11);
+  const principal=top.map(r=>{
+    let last=r.length-1;
+    for(let i=r.length-1;i>=0;i--){ if(r[i]&&r[i].trim()!==""){ last=i; break; }}
+    return [r[0]||"", r[last]||""];
+  });
+  document.getElementById("tabla_tc").innerHTML =
+    principal.map(row=>"<tr>"+row.map(c=>`<td>${c}</td>`).join("")+"</tr>").join("");
+  const detalle=rows.slice(12,15).map(r=>r.slice(0,2));
+  document.getElementById("tabla_tc_detalle").innerHTML =
+    detalle.map(row=>"<tr>"+row.map(c=>`<td>${c}</td>`).join("")+"</tr>").join("");
+}
+async function cargarGas(){
+  const resp=await fetch(csvUrl(GID_GAS));
+  const rows=parseCSV(await resp.text());
+  const top=rows.slice(0,5);
+  const header=top[0]||[];
+  let last=-1,prev=-1;
+  for(let i=header.length-1;i>=1;i--){
+    if(header[i]&&header[i].trim()!==""){ if(last===-1) last=i; else{prev=i; break;} }
+  }
+  if(last===-1) last=Math.max(1,header.length-1);
+  if(prev===-1) prev=Math.max(1,last-1);
+  const out=top.map(r=>{
+    const cA=r[0]??"", cPrev=r[prev]??"", cLast=r[last]??"";
+    return `<tr><td>${cA}</td><td>${cPrev}</td><td>${cLast}</td></tr>`;
+  }).join("");
+  document.getElementById("tabla_gas").innerHTML=out;
+}
+async function cargarHijas(){
+  const resp=await fetch(csvUrl(GID_HIJAS));
+  const rows=parseCSV(await resp.text());
+  const datos=rows.slice(0,2).map(r=>r.slice(0,2));
+  if(datos.length<2) return;
+  const fila1=`<tr>${datos[0].map(c=>`<td>${c}</td>`).join("")}</tr>`;
+  const fila2=`<tr>${datos[1].map(c=>{
+    const texto = c.trim();
+    if (/^\d{1,3}(\.\d{3})+$/.test(texto)) { // punto como miles
+      return `<td>${texto}</td>`;
+    }
+    const num = parseFloat(texto.replace(/\./g,"").replace(",","."));
+    const val = isNaN(num) ? texto : num.toLocaleString("es-CL");
+    return `<td>${val}</td>`;
+  }).join("")}</tr>`;
+  document.getElementById("tabla_hijas").innerHTML=fila1+fila2;
+}
+async function cargarMach(){
+  const resp=await fetch(csvUrl(GID_MACH));
+  const rows=parseCSV(await resp.text());
+  const top=rows.slice(0,14).map(r=>r.slice(0,3)); // A1:C14
+  document.getElementById("tabla_mach").innerHTML =
+    top.map(row=>"<tr>"+row.map(c=>`<td>${c??""}</td>`).join("")+"</tr>").join("");
 }
 
-async function cargarComprasMaster(){
-  [cite_start]const resp = await fetch(csvUrl(GID_COMPRAS)); [cite: 15]
-  [cite_start]const rows = parseCSV(await resp.text()); [cite: 15]
-  [cite_start]if(rows.length === 0) return; [cite: 15]
-  [cite_start]const encabezados = rows[0]; [cite: 16]
-  [cite_start]const filtrados = rows.slice(1).filter(r => r[4] === "**9908" || r[4] === "**4526"); [cite: 16]
-  [cite_start]let html = "<thead><tr>" + encabezados.map(h => `<th>${h}</th>`).join("") + "</tr></thead><tbody>"; [cite: 17]
-  [cite_start]html += filtrados.map(row => "<tr>" + row.map(c => `<td>${c}</td>`).join("") + "</tr>").join(""); [cite: 18]
-  html += "</tbody>";
-  [cite_start]document.getElementById("tabla_compras").innerHTML = html; [cite: 18]
-}
+// Gesto de swipe
+let startX=0,startY=0;const minDistance=50;
+document.addEventListener("touchstart",e=>{
+  if(e.touches.length===1){startX=e.touches[0].clientX;startY=e.touches[0].clientY;}
+});
+document.addEventListener("touchend",e=>{
+  if(e.changedTouches.length===1){
+    const dx=e.changedTouches[0].clientX-startX;
+    const dy=e.changedTouches[0].clientY-startY;
+    if(Math.abs(dx)>Math.abs(dy)&&Math.abs(dx)>minDistance){
+      const views=["view-resumen","view-tc","view-gas","view-hijas","view-mach"];
+      const current=views.findIndex(v=>document.getElementById(v).classList.contains("active"));
+      let next=current;
+      if(dx<0&&current<views.length-1)next=current+1;
+      else if(dx>0&&current>0)next=current-1;
+      if(next!==current){
+        document.querySelectorAll(".view").forEach(v=>v.classList.remove('active'));
+        document.getElementById(views[next]).classList.add('active');
+        const tabs=document.querySelectorAll(".tabbtn");
+        tabs.forEach(b=>b.classList.remove('active'));
+        tabs[next].classList.add('active');
+      }
+    }
+  }
+});
 
-async function cargarComprasTC(){
-  const resp = await fetch(csvUrl(GID_COMPRAS_TC));
-  const rows = parseCSV(await resp.text());
-  if(rows.length === 0) return;
-
-  // Extraer columnas A a E (índices 0 a 4)
-  const encabezados = rows[0].slice(0, 5);
-  const datos = rows.slice(1).map(r => r.slice(0, 5));
-
-  let html = "<thead><tr>" + encabezados.map(h => `<th>${h}</th>`).join("") + "</tr></thead><tbody>";
-  html += datos.map(row => "<tr>" + row.map(c => `<td>${c}</td>`).join("") + "</tr>").join("");
-  html += "</tbody>";
-  
-  document.getElementById("tabla_compras_tc").innerHTML = html;
-}
-
-// Carga inicial
-[cite_start]cargarResumen(); [cite: 19]
-[cite_start]cargarTC(); [cite: 19]
-[cite_start]cargarComprasMaster(); [cite: 19]
-cargarComprasTC();
-
-setInterval(()=>{ 
-  cargarResumen(); 
-  cargarTC(); 
-  cargarComprasMaster(); 
-  cargarComprasTC();
-[cite_start]}, 300000); [cite: 19]
+// Carga inicial y actualización
+cargarResumen(); cargarTC(); cargarGas(); cargarHijas(); cargarMach();
+setInterval(()=>{ cargarResumen(); cargarTC(); cargarGas(); cargarHijas(); cargarMach(); },300000);
 </script>
+
 </body>
 </html>
