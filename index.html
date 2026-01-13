@@ -199,7 +199,7 @@ document.querySelectorAll('.tabbtn').forEach(btn=>{
 async function cargarResumen(){
   const resp=await fetch(csvUrl(GID_RESUMEN));
   const rows=parseCSV(await resp.text());
-  const slice=rows.slice(0,7).map(r=>r.slice(3,4));
+  const slice=rows.slice(0,7).map(r=>r.slice(3,5));
   document.getElementById("tabla_resumen").innerHTML =
     slice.map(row=>"<tr>"+row.map(c=>`<td>${c}</td>`).join("")+"</tr>").join("");
 }
