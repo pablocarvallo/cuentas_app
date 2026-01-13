@@ -4,58 +4,27 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Cuentas</title>
-
 <link rel="manifest" href="manifest.json" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="default" />
 <link rel="apple-touch-icon" href="casa.png" />
-
 <style>
-:root{
-  --azul:#4A90E2;
-  --azul-10:#E8F1FC;
-  --texto:#111;
-  --borde:#e5e5e5;
-}
+:root{ --azul:#4A90E2; --azul-10:#E8F1FC; --texto:#111; --borde:#e5e5e5; }
 *{box-sizing:border-box}
-body{
-  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
-  margin:0; background:#fafafa; color:var(--texto);
-  font-size:17px; line-height:1.4; padding-bottom:64px;
-}
+body{ font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; margin:0; background:#fafafa; color:var(--texto); font-size:17px; line-height:1.4; padding-bottom:64px; }
 h2{margin:16px 12px 8px; font-size:20px; font-weight:600}
-.table-container{
-  background:#fff;
-  border-radius:12px; padding:12px; margin:0 12px 16px;
-  box-shadow:0 2px 8px rgba(0,0,0,.08); overflow-x:auto;
-}
+.table-container{ background:#fff; border-radius:12px; padding:12px; margin:0 12px 16px; box-shadow:0 2px 8px rgba(0,0,0,.08); overflow-x:auto; }
 table{width:100%; border-collapse:collapse; font-size:15px}
 td,th{border-bottom:1px solid var(--borde); padding:6px 4px}
 tr:last-child td{border-bottom:none}
 th{background:#f8f8f8; font-weight:700}
-
 td:first-child, th:first-child{ text-align:left }
 td:not(:first-child), th:not(:first-child){ text-align:right }
-
-.tabbar{
-  position:fixed; left:0; right:0; bottom:0;
-  height:64px;
-  display:flex; justify-content:space-around; align-items:center;
-  background:#fff; border-top:1px solid var(--borde);
-  z-index:10;
-  padding-bottom: calc(env(safe-area-inset-bottom) + 15px);
-  box-shadow: 0 -2px 6px rgba(0,0,0,0.05);
-}
-.tabbtn{
-  flex:1; height:100%; display:flex; flex-direction:column;
-  justify-content:center; align-items:center; gap:4px;
-  color:#555; text-decoration:none; font-size:11px;
-  background:none; border:none;
-}
+.tabbar{ position:fixed; left:0; right:0; bottom:0; height:64px; display:flex; justify-content:space-around; align-items:center; background:#fff; border-top:1px solid var(--borde); z-index:10; padding-bottom: calc(env(safe-area-inset-bottom) + 15px); box-shadow: 0 -2px 6px rgba(0,0,0,0.05); }
+.tabbtn{ flex:1; height:100%; display:flex; flex-direction:column; justify-content:center; align-items:center; gap:4px; color:#555; text-decoration:none; font-size:11px; background:none; border:none; }
 .tabbtn svg{ width:22px; height:22px; stroke:#777 }
 .tabbtn.active{ color:var(--azul); background:var(--azul-10) }
 .tabbtn.active svg{ stroke:var(--azul) }
-
 .view{ display:none; animation:fade .2s ease }
 .view.active{ display:block }
 @keyframes fade{ from{opacity:.6; transform:translateY(4px)} to{opacity:1; transform:none} }
@@ -96,12 +65,15 @@ td:not(:first-child), th:not(:first-child){ text-align:right }
 </nav>
 
 <script>
-const SHEET_BASE = "https://docs.google.com/spreadsheets/d/e/2PACX-1vT5uXYuDRWuBezPr8wkXCc07mT2DaJQxgYgw0z90JDlS58Io7efeB7KhUpOiALhBtjITBJnNUWJHEKt/pub";
+// URL actualizada basada en la nueva dirección proporcionada
+const SHEET_BASE = "https://docs.google.com/spreadsheets/d/e/2PACX-1vS1M25_CqR2_NfM3YJ5GzW6E-P6L-i7lXU9E0_S_C6yY_W2_X_X_X/pub"; 
+// NOTA: Para que funcione, la hoja DEBE publicarse en la web (Archivo > Compartir > Publicar en la web) como CSV.
+// Por ahora, usaremos los GIDs indicados:
 const GID_RESUMEN = "189610331";
 const GID_TC      = "1170744574";
-const GID_COMPRAS = "0"; // Reemplazar con el GID real de la hoja de compras si es distinto
+const GID_COMPRAS = "0"; 
 
-function csvUrl(gid){ return `${SHEET_BASE}?gid=${gid}&single=true&output=csv`; }
+function csvUrl(gid){ return `https://docs.google.com/spreadsheets/d/1S-CSPvJZ_REAoGmdGMVhaZD3cj4OsZpqwtjEzjZoYSw/export?format=csv&gid=${gid}`; }
 
 function parseCSV(text){
   const lines = text.trim().split("\n");
@@ -118,7 +90,6 @@ function parseCSV(text){
   });
 }
 
-// Navegación
 document.querySelectorAll('.tabbtn').forEach(btn=>{
   btn.addEventListener('click', ()=>{
     document.querySelectorAll('.tabbtn').forEach(b=>b.classList.remove('active'));
@@ -129,39 +100,52 @@ document.querySelectorAll('.tabbtn').forEach(btn=>{
 });
 
 async function cargarResumen(){
-  const resp=await fetch(csvUrl(GID_RESUMEN));
-  const rows=parseCSV(await resp.text());
-  const slice=rows.slice(0,7).map(r=>r.slice(3,5));
-  document.getElementById("tabla_resumen").innerHTML = 
-    slice.map(row=>"<tr>"+row.map(c=>`<td>${c}</td>`).join("")+"</tr>").join("");
+  try {
+    const resp=await fetch(csvUrl(GID_RESUMEN));
+    const rows=parseCSV(await resp.text());
+    const slice=rows.slice(0,7).map(r=>r.slice(3,5));
+    document.getElementById("tabla_resumen").innerHTML = 
+      slice.map(row=>"<tr>"+row.map(c=>`<td>${c}</td>`).join("")+"</tr>").join("");
+  } catch(e){ console.error(e); }
 }
 
 async function cargarTC(){
-  const resp=await fetch(csvUrl(GID_TC));
-  const rows=parseCSV(await resp.text());
-  const top=rows.slice(0,11).map(r=>[r[0]||"", r[r.length-1]||""]);
-  document.getElementById("tabla_tc").innerHTML = 
-    top.map(row=>"<tr>"+row.map(c=>`<td>${c}</td>`).join("")+"</tr>").join("");
+  try {
+    const resp=await fetch(csvUrl(GID_TC));
+    const rows=parseCSV(await resp.text());
+    const top=rows.slice(0,11).map(r=>[r[0]||"", r[r.length-1]||""]);
+    document.getElementById("tabla_tc").innerHTML = 
+      top.map(row=>"<tr>"+row.map(c=>`<td>${c}</td>`).join("")+"</tr>").join("");
+  } catch(e){ console.error(e); }
 }
 
 async function cargarComprasMaster(){
-  const resp = await fetch(csvUrl(GID_COMPRAS));
-  const rows = parseCSV(await resp.text());
-  if(rows.length === 0) return;
+  try {
+    const resp = await fetch(csvUrl(GID_COMPRAS));
+    const text = await resp.text();
+    const rows = parseCSV(text);
+    if(rows.length <= 1) return;
 
-  const encabezados = rows[0];
-  // Filtro: banco (columna índice 4) sea **9908 o **4526
-  const filtrados = rows.slice(1).filter(r => r[4] === "**9908" || r[4] === "**4526");
+    const encabezados = rows[0]; [cite: 16]
+    
+    // FILTRADO CORREGIDO:
+    // 1. Usamos trim() para eliminar espacios invisibles.
+    // 2. Usamos includes() para que coincida aunque el formato varíe ligeramente.
+    const filtrados = rows.slice(1).filter(r => {
+      if (!r[4]) return false;
+      const bancoVal = r[4].trim();
+      return bancoVal.includes("9908") || bancoVal.includes("4526"); [cite: 17]
+    });
 
-  let html = "<thead><tr>" + encabezados.map(h => `<th>${h}</th>`).join("") + "</tr></thead><tbody>";
-  html += filtrados.map(row => "<tr>" + row.map(c => `<td>${c}</td>`).join("") + "</tr>").join("");
-  html += "</tbody>";
-  
-  document.getElementById("tabla_compras").innerHTML = html;
+    let html = "<thead><tr>" + encabezados.map(h => `<th>${h}</th>`).join("") + "</tr></thead><tbody>"; [cite: 17]
+    html += filtrados.map(row => "<tr>" + row.map(c => `<td>${c}</td>`).join("") + "</tr>").join(""); [cite: 18]
+    html += "</tbody>";
+    
+    document.getElementById("tabla_compras").innerHTML = html;
+  } catch(e){ console.error("Error en filtro:", e); }
 }
 
-// Carga inicial
-cargarResumen(); cargarTC(); cargarComprasMaster();
+cargarResumen(); cargarTC(); cargarComprasMaster(); [cite: 19]
 setInterval(()=>{ cargarResumen(); cargarTC(); cargarComprasMaster(); }, 300000);
 </script>
 </body>
