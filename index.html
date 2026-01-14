@@ -34,7 +34,7 @@
             touch-action: pan-y;
         }
 
-        .tab-content { display: none; height: 100%; }
+        .tab-content { display: none; }
         .tab-content.active { display: block; }
         
         .active-tab-btn { color: #2563eb; border-top: 2px solid #2563eb; background-color: #eff6ff; }
@@ -64,16 +64,6 @@
             text-align: right;
         }
         
-        /* Contenedor específico para el gráfico */
-        .chart-container {
-            width: 100%;
-            height: 100%;
-            min-height: 400px;
-            overflow: hidden;
-            display: flex;
-            justify-content: center;
-        }
-        
         ::-webkit-scrollbar { display: none; }
     </style>
 </head>
@@ -85,32 +75,25 @@
             <p class="text-gray-500 text-sm">Cargando...</p>
         </div>
         
-        <!-- Contenedores de pestañas -->
         <div id="tab1" class="tab-content active"><div id="content1" class="bg-white pb-safe-extra"></div></div>
         <div id="tab2" class="tab-content"><div id="content2" class="bg-white pb-safe-extra"></div></div>
         <div id="tab3" class="tab-content"><div id="content3" class="bg-white pb-safe-extra"></div></div>
         <div id="tab4" class="tab-content"><div id="content4" class="bg-white pb-safe-extra"></div></div>
-        
-        <!-- Nueva Pestaña Gráfico -->
-        <div id="tab5" class="tab-content h-full">
-            <div class="chart-container bg-white p-2">
-                <iframe 
-                    id="iframe-graf"
-                    width="100%" 
-                    height="100%" 
-                    style="border:none;"
-                    src="https://docs.google.com/spreadsheets/d/e/2PACX-1vT5uXYuDRWuBezPr8wkXCc07mT2DaJQxgYgw0z90JDlS58Io7efeB7KhUpOiALhBtjITBJnNUWJHEKt/pubchart?oid=455775444&format=interactive">
-                </iframe>
-            </div>
-        </div>
     </main>
 
     <nav class="fixed bottom-0 left-0 right-0 bg-white border-t flex justify-around items-center h-20 shadow-[0_-2px_10px_rgba(0,0,0,0.05)] z-50" style="padding-bottom: var(--safe-bottom);">
-        <button onclick="switchTab('tab1')" id="btn-tab1" class="flex flex-col items-center justify-center w-full h-full active-tab-btn transition-colors text-[9px] font-bold uppercase">Resumen</button>
-        <button onclick="switchTab('tab2')" id="btn-tab2" class="flex flex-col items-center justify-center w-full h-full text-gray-400 transition-colors border-l text-[9px] font-bold uppercase">TC</button>
-        <button onclick="switchTab('tab3')" id="btn-tab3" class="flex flex-col items-center justify-center w-full h-full text-gray-400 transition-colors border-l text-[9px] font-bold uppercase">Master</button>
-        <button onclick="switchTab('tab4')" id="btn-tab4" class="flex flex-col items-center justify-center w-full h-full text-gray-400 transition-colors border-l text-[9px] font-bold uppercase">Lider</button>
-        <button onclick="switchTab('tab5')" id="btn-tab5" class="flex flex-col items-center justify-center w-full h-full text-gray-400 transition-colors border-l text-[9px] font-bold uppercase">Graf</button>
+        <button onclick="switchTab('tab1')" id="btn-tab1" class="flex flex-col items-center justify-center w-full h-full active-tab-btn transition-colors">
+            <span class="text-[10px] font-bold uppercase">Resumen</span>
+        </button>
+        <button onclick="switchTab('tab2')" id="btn-tab2" class="flex flex-col items-center justify-center w-full h-full text-gray-400 transition-colors border-l">
+            <span class="text-[10px] font-bold uppercase">TC</span>
+        </button>
+        <button onclick="switchTab('tab3')" id="btn-tab3" class="flex flex-col items-center justify-center w-full h-full text-gray-400 transition-colors border-l">
+            <span class="text-[10px] font-bold uppercase">Master</span>
+        </button>
+        <button onclick="switchTab('tab4')" id="btn-tab4" class="flex flex-col items-center justify-center w-full h-full text-gray-400 transition-colors border-l">
+            <span class="text-[10px] font-bold uppercase">LiderBCI</span>
+        </button>
     </nav>
 
     <script>
@@ -120,7 +103,7 @@
             tab3: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT5uXYuDRWuBezPr8wkXCc07mT2DaJQxgYgw0z90JDlS58Io7efeB7KhUpOiALhBtjITBJnNUWJHEKt/pub?gid=878224959&single=true&output=csv'
         };
 
-        const tabs = ['tab1', 'tab2', 'tab3', 'tab4', 'tab5'];
+        const tabs = ['tab1', 'tab2', 'tab3', 'tab4'];
         let currentTabIndex = 0;
 
         function switchTab(tabId) {
@@ -133,12 +116,6 @@
             document.getElementById(tabId).classList.add('active');
             document.getElementById('btn-' + tabId).classList.add('active-tab-btn');
             document.getElementById('swipe-container').scrollTop = 0;
-            
-            // Recargar iframe del gráfico al entrar para asegurar visualización correcta
-            if (tabId === 'tab5') {
-                const ifr = document.getElementById('iframe-graf');
-                ifr.src = ifr.src;
-            }
         }
 
         let touchstartX = 0;
@@ -212,8 +189,9 @@
                 const csvTC = parseCSV(resTC);
                 const csvMaster = parseCSV(resMaster);
 
-                renderUnified(csvResumen.slice(0, 7), 'content1', 3, 4);
-                renderUnified(csvTC.slice(0, 11), 'content2', 0, 1);
+                // Renderizados con límites solicitados
+                renderUnified(csvResumen.slice(0, 8), 'content1', 3, 4); // Límite fila 8
+                renderUnified(csvTC.slice(0, 11), 'content2', 0, 1);    // Límite fila 11
                 renderUnified(csvMaster.slice(0, 200), 'content3', 0, 1);
                 renderUnified(csvMaster.slice(0, 200), 'content4', 3, 4);
 
