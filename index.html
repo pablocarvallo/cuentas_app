@@ -23,11 +23,10 @@
             background-color: #f9fafb;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             font-size: 18px;
-            overflow: hidden; /* Mantiene la App fija */
+            overflow: hidden;
             height: 100vh;
         }
         
-        /* Contenedor principal corregido para scroll vertical total */
         #swipe-container {
             height: calc(100vh - var(--safe-top) - 2rem - 5rem - var(--safe-bottom));
             overflow-y: auto;
@@ -40,7 +39,6 @@
         
         .active-tab-btn { color: #2563eb; border-top: 2px solid #2563eb; background-color: #eff6ff; }
         
-        /* Padding inferior para que las últimas filas suban por encima del nav */
         .pb-safe-extra { padding-bottom: calc(var(--safe-bottom) + 120px); }
         
         .data-row {
@@ -77,7 +75,6 @@
             <p class="text-gray-500 text-sm">Cargando...</p>
         </div>
         
-        <!-- Contenedores de pestañas con padding extra para scroll -->
         <div id="tab1" class="tab-content active"><div id="content1" class="bg-white pb-safe-extra"></div></div>
         <div id="tab2" class="tab-content"><div id="content2" class="bg-white pb-safe-extra"></div></div>
         <div id="tab3" class="tab-content"><div id="content3" class="bg-white pb-safe-extra"></div></div>
@@ -118,12 +115,9 @@
             });
             document.getElementById(tabId).classList.add('active');
             document.getElementById('btn-' + tabId).classList.add('active-tab-btn');
-            
-            // Volver al inicio del scroll al cambiar de pestaña
             document.getElementById('swipe-container').scrollTop = 0;
         }
 
-        // Lógica de Swipe
         let touchstartX = 0;
         let touchendX = 0;
         let touchstartY = 0;
@@ -145,8 +139,6 @@
         function handleGesture() {
             const deltaX = touchendX - touchstartX;
             const deltaY = touchendY - touchstartY;
-
-            // Movimiento horizontal claro
             if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > 60) {
                 if (deltaX < 0) {
                     if (currentTabIndex < tabs.length - 1) switchTab(tabs[currentTabIndex + 1]);
@@ -197,9 +189,9 @@
                 const csvTC = parseCSV(resTC);
                 const csvMaster = parseCSV(resMaster);
 
-                // Renderizados
-                renderUnified(csvResumen.slice(0, 10), 'content1', 3, 4);
-                renderUnified(csvTC.slice(0, 15), 'content2', 0, 1);
+                // Renderizados con límites solicitados
+                renderUnified(csvResumen.slice(0, 7), 'content1', 3, 4); // Límite fila 7
+                renderUnified(csvTC.slice(0, 11), 'content2', 0, 1);    // Límite fila 11
                 renderUnified(csvMaster.slice(0, 200), 'content3', 0, 1);
                 renderUnified(csvMaster.slice(0, 200), 'content4', 3, 4);
 
@@ -216,10 +208,8 @@
                 const label = row[labelIdx] || "";
                 const rawValue = row[valueIdx] || "";
                 if(!label && !rawValue) return "";
-
                 const isHeader = index === 0;
                 const valueDisplay = isHeader ? rawValue : formatNumber(rawValue);
-
                 return `
                     <div class="data-row ${isHeader ? 'bg-blue-600 text-white font-bold sticky top-0' : ''}">
                         <span class="truncate-cell ${isHeader ? 'text-white' : 'text-gray-700 font-medium'}">${label}</span>
