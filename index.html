@@ -19,36 +19,45 @@
         body {
             -webkit-tap-highlight-color: transparent;
             user-select: none;
-            /* Se añade un margen superior más amplio (2rem + safe-area) */
             padding-top: calc(var(--safe-top) + 2rem);
             background-color: #f9fafb;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             font-size: 18px;
-            overflow: hidden; /* Evita scroll elástico del body */
+            overflow: hidden; /* Mantiene la App fija */
+            height: 100vh;
         }
-        .tab-content { display: none; height: 100%; }
+        
+        /* Contenedor principal corregido para scroll vertical total */
+        #swipe-container {
+            height: calc(100vh - var(--safe-top) - 2rem - 5rem - var(--safe-bottom));
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            touch-action: pan-y;
+        }
+
+        .tab-content { display: none; }
         .tab-content.active { display: block; }
+        
         .active-tab-btn { color: #2563eb; border-top: 2px solid #2563eb; background-color: #eff6ff; }
-        .pb-safe { padding-bottom: var(--safe-bottom); }
+        
+        /* Padding inferior para que las últimas filas suban por encima del nav */
+        .pb-safe-extra { padding-bottom: calc(var(--safe-bottom) + 120px); }
         
         .data-row {
-            padding: 0.75rem 0.75rem;
+            padding: 0.85rem 1rem;
             border-bottom: 1px solid #f3f4f6;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            overflow: hidden;
         }
-        .data-row:nth-child(even) {
-            background-color: #f8fafc;
-        }
+        .data-row:nth-child(even) { background-color: #f8fafc; }
 
         .truncate-cell {
             white-space: nowrap;
             overflow: hidden;
-            text-overflow: clip;
+            text-overflow: ellipsis;
             flex-shrink: 1;
-            margin-right: 8px;
+            margin-right: 12px;
         }
 
         .value-cell {
@@ -58,41 +67,35 @@
         }
         
         ::-webkit-scrollbar { display: none; }
-
-        /* Contenedor principal para permitir gestos */
-        #swipe-container {
-            height: calc(100vh - var(--safe-top) - var(--safe-bottom) - 7rem);
-            overflow-y: auto;
-            touch-action: pan-y; /* Permite scroll vertical pero detectaremos horizontal por JS */
-        }
     </style>
 </head>
-<body class="h-screen flex flex-col">
+<body class="flex flex-col">
 
-    <main id="swipe-container" class="flex-grow pb-10">
+    <main id="swipe-container" class="flex-grow">
         <div id="loading" class="flex flex-col items-center justify-center py-20">
             <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mb-2"></div>
             <p class="text-gray-500 text-sm">Cargando...</p>
         </div>
         
-        <div id="tab1" class="tab-content active"><div id="content1" class="bg-white"></div></div>
-        <div id="tab2" class="tab-content"><div id="content2" class="bg-white"></div></div>
-        <div id="tab3" class="tab-content"><div id="content3" class="bg-white"></div></div>
-        <div id="tab4" class="tab-content"><div id="content4" class="bg-white"></div></div>
+        <!-- Contenedores de pestañas con padding extra para scroll -->
+        <div id="tab1" class="tab-content active"><div id="content1" class="bg-white pb-safe-extra"></div></div>
+        <div id="tab2" class="tab-content"><div id="content2" class="bg-white pb-safe-extra"></div></div>
+        <div id="tab3" class="tab-content"><div id="content3" class="bg-white pb-safe-extra"></div></div>
+        <div id="tab4" class="tab-content"><div id="content4" class="bg-white pb-safe-extra"></div></div>
     </main>
 
-    <nav class="fixed bottom-0 left-0 right-0 bg-white border-t flex justify-around items-center h-20 pb-safe shadow-[0_-2px_10px_rgba(0,0,0,0.05)]">
+    <nav class="fixed bottom-0 left-0 right-0 bg-white border-t flex justify-around items-center h-20 shadow-[0_-2px_10px_rgba(0,0,0,0.05)] z-50" style="padding-bottom: var(--safe-bottom);">
         <button onclick="switchTab('tab1')" id="btn-tab1" class="flex flex-col items-center justify-center w-full h-full active-tab-btn transition-colors">
-            <span class="text-[10px] font-bold uppercase text-center px-1">Resumen</span>
+            <span class="text-[10px] font-bold uppercase">Resumen</span>
         </button>
         <button onclick="switchTab('tab2')" id="btn-tab2" class="flex flex-col items-center justify-center w-full h-full text-gray-400 transition-colors border-l">
-            <span class="text-[10px] font-bold uppercase text-center px-1">TC</span>
+            <span class="text-[10px] font-bold uppercase">TC</span>
         </button>
         <button onclick="switchTab('tab3')" id="btn-tab3" class="flex flex-col items-center justify-center w-full h-full text-gray-400 transition-colors border-l">
-            <span class="text-[10px] font-bold uppercase text-center px-1">Master</span>
+            <span class="text-[10px] font-bold uppercase">Master</span>
         </button>
         <button onclick="switchTab('tab4')" id="btn-tab4" class="flex flex-col items-center justify-center w-full h-full text-gray-400 transition-colors border-l">
-            <span class="text-[10px] font-bold uppercase text-center px-1">LiderBCI</span>
+            <span class="text-[10px] font-bold uppercase">LiderBCI</span>
         </button>
     </nav>
 
@@ -116,7 +119,7 @@
             document.getElementById(tabId).classList.add('active');
             document.getElementById('btn-' + tabId).classList.add('active-tab-btn');
             
-            // Reset scroll position on tab switch
+            // Volver al inicio del scroll al cambiar de pestaña
             document.getElementById('swipe-container').scrollTop = 0;
         }
 
@@ -143,24 +146,18 @@
             const deltaX = touchendX - touchstartX;
             const deltaY = touchendY - touchstartY;
 
-            // Asegurarse de que el movimiento es predominantemente horizontal
-            if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > 50) {
+            // Movimiento horizontal claro
+            if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > 60) {
                 if (deltaX < 0) {
-                    // Swipe izquierda -> Siguiente pestaña
-                    if (currentTabIndex < tabs.length - 1) {
-                        switchTab(tabs[currentTabIndex + 1]);
-                    }
+                    if (currentTabIndex < tabs.length - 1) switchTab(tabs[currentTabIndex + 1]);
                 } else {
-                    // Swipe derecha -> Pestaña anterior
-                    if (currentTabIndex > 0) {
-                        switchTab(tabs[currentTabIndex - 1]);
-                    }
+                    if (currentTabIndex > 0) switchTab(tabs[currentTabIndex - 1]);
                 }
             }
         }
 
         function formatNumber(val) {
-            if (val === null || val === undefined || val === '') return '';
+            if (!val) return '';
             const cleanVal = val.toString().trim().replace(/[$.]/g, '').replace(',', '.');
             const num = parseFloat(cleanVal);
             if (isNaN(num)) return val;
@@ -200,19 +197,16 @@
                 const csvTC = parseCSV(resTC);
                 const csvMaster = parseCSV(resMaster);
 
-                const dataResumen = csvResumen.slice(0, 7);
-                const dataTC = csvTC.slice(0, 11);
-                const dataMasterBase = csvMaster.slice(0, 200);
-
-                renderUnified(dataResumen, 'content1', 3, 4);
-                renderUnified(dataTC, 'content2', 0, 1);
-                renderUnified(dataMasterBase, 'content3', 0, 1);
-                renderUnified(dataMasterBase, 'content4', 3, 4);
+                // Renderizados
+                renderUnified(csvResumen.slice(0, 10), 'content1', 3, 4);
+                renderUnified(csvTC.slice(0, 15), 'content2', 0, 1);
+                renderUnified(csvMaster.slice(0, 200), 'content3', 0, 1);
+                renderUnified(csvMaster.slice(0, 200), 'content4', 3, 4);
 
                 document.getElementById('loading').style.display = 'none';
             } catch (error) {
-                console.error('Error fetching data:', error);
-                document.getElementById('loading').innerHTML = `<div class="p-6 bg-red-50 text-red-600 rounded-xl text-center">Error de conexión</div>`;
+                console.error('Error:', error);
+                document.getElementById('loading').innerHTML = `<div class="p-6 text-red-600 text-center">Error de red</div>`;
             }
         }
 
@@ -227,7 +221,7 @@
                 const valueDisplay = isHeader ? rawValue : formatNumber(rawValue);
 
                 return `
-                    <div class="data-row ${isHeader ? 'bg-blue-600 text-white font-bold' : ''}">
+                    <div class="data-row ${isHeader ? 'bg-blue-600 text-white font-bold sticky top-0' : ''}">
                         <span class="truncate-cell ${isHeader ? 'text-white' : 'text-gray-700 font-medium'}">${label}</span>
                         <span class="value-cell ${isHeader ? 'text-white' : 'text-blue-600 font-bold'} font-mono">${valueDisplay}</span>
                     </div>
