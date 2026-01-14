@@ -22,49 +22,54 @@
             padding-top: var(--safe-top);
             background-color: #f9fafb;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            font-size: 13px; /* Tamaño base para lograr 12 líneas */
         }
         .tab-content { display: none; }
         .tab-content.active { display: block; }
         .active-tab-btn { color: #2563eb; border-top: 2px solid #2563eb; background-color: #eff6ff; }
         .pb-safe { padding-bottom: var(--safe-bottom); }
         
+        /* Ajuste de contenedores para uniformidad */
+        .data-row {
+            padding: 0.65rem 0.75rem;
+            border-bottom: 1px solid #f3f4f6;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .data-row:nth-child(even) {
+            background-color: #f8fafc;
+        }
+        
         ::-webkit-scrollbar { display: none; }
     </style>
 </head>
 <body class="h-screen flex flex-col">
 
-    <header class="bg-white border-b p-4 text-center font-bold text-lg shadow-sm sticky top-0 z-10 pt-10">
-        Control de Finanzas
-    </header>
-
-    <main class="flex-grow overflow-y-auto p-4 pb-32">
+    <main class="flex-grow overflow-y-auto pb-32">
         <div id="loading" class="flex flex-col items-center justify-center py-20">
             <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mb-2"></div>
-            <p class="text-gray-500 text-sm">Cargando datos en tiempo real...</p>
+            <p class="text-gray-500 text-sm">Cargando...</p>
         </div>
         
         <!-- Pestaña 1: Resumen -->
         <div id="tab1" class="tab-content active">
-            <h2 class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Resumen (D1:E7)</h2>
-            <div id="content1" class="grid grid-cols-1 gap-3"></div>
+            <div id="content1" class="bg-white"></div>
         </div>
 
         <!-- Pestaña 2: TC -->
         <div id="tab2" class="tab-content">
-            <h2 class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Tipos de Cambio / TC (A1:B11)</h2>
-            <div id="content2" class="bg-white rounded-xl shadow-sm border border-gray-100 divide-y"></div>
+            <div id="content2" class="bg-white"></div>
         </div>
 
         <!-- Pestaña 3: Master -->
         <div id="tab3" class="tab-content">
-            <h2 class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Base de Datos Master (A1:B200)</h2>
-            <div id="content3" class="space-y-2"></div>
+            <div id="content3" class="bg-white"></div>
         </div>
 
         <!-- Pestaña 4: LiderBCI -->
         <div id="tab4" class="tab-content">
-            <h2 class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">LiderBCI (D1:E200)</h2>
-            <div id="content4" class="space-y-2"></div>
+            <div id="content4" class="bg-white"></div>
         </div>
     </main>
 
@@ -145,10 +150,10 @@
                 const dataTC = csvTC.slice(0, 11);
                 const dataMasterBase = csvMaster.slice(0, 200);
 
-                renderResumen(dataResumen, 'content1');
-                renderTC(dataTC, 'content2');
-                renderMaster(dataMasterBase, 'content3');
-                renderLiderBCI(dataMasterBase, 'content4');
+                renderUnified(dataResumen, 'content1', 3, 4);
+                renderUnified(dataTC, 'content2', 0, 1);
+                renderUnified(dataMasterBase, 'content3', 0, 1);
+                renderUnified(dataMasterBase, 'content4', 3, 4);
 
                 document.getElementById('loading').style.display = 'none';
             } catch (error) {
@@ -157,66 +162,23 @@
             }
         }
 
-        function renderResumen(rows, containerId) {
-            const container = document.getElementById(containerId);
-            container.innerHTML = rows.map(row => {
-                const label = row[3] || ""; 
-                const value = row[4] || ""; 
-                if(!label && !value) return "";
-                return `
-                    <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex justify-between items-center">
-                        <span class="text-gray-600 font-medium">${label}</span>
-                        <span class="text-blue-600 font-bold text-lg">${value}</span>
-                    </div>
-                `;
-            }).join('');
-        }
-
-        function renderTC(rows, containerId) {
-            const container = document.getElementById(containerId);
-            container.innerHTML = rows.map(row => {
-                if(!row[0] && !row[1]) return "";
-                return `
-                    <div class="p-4 flex justify-between items-center">
-                        <span class="text-sm font-medium text-gray-700">${row[0] || ''}</span>
-                        <span class="text-sm font-mono font-bold text-blue-500">${row[1] || ''}</span>
-                    </div>
-                `;
-            }).join('');
-        }
-
-        function renderMaster(rows, containerId) {
+        /**
+         * Renderizado unificado con franjas y fuente optimizada
+         */
+        function renderUnified(rows, containerId, labelIdx, valueIdx) {
             const container = document.getElementById(containerId);
             container.innerHTML = rows.map((row, index) => {
-                if(!row[0] && !row[1]) return "";
-                const isHeader = index === 0;
-                const valueDisplay = isHeader ? (row[1] || '') : formatNumber(row[1]);
-                
-                return `
-                    <div class="${isHeader ? 'bg-blue-600 text-white' : 'bg-white text-gray-800'} p-3 rounded-lg border border-gray-100 shadow-sm text-xs">
-                        <div class="flex justify-between items-center">
-                            <span class="font-bold ${isHeader ? 'text-white' : 'text-gray-900'}">${row[0] || ''}</span>
-                            <span class="font-medium font-mono">${valueDisplay}</span>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-        }
+                const label = row[labelIdx] || "";
+                const rawValue = row[valueIdx] || "";
+                if(!label && !rawValue) return "";
 
-        function renderLiderBCI(rows, containerId) {
-            const container = document.getElementById(containerId);
-            container.innerHTML = rows.map((row, index) => {
-                if(!row[3] && !row[4]) return "";
                 const isHeader = index === 0;
-                const label = row[3] || '';
-                const valueDisplay = isHeader ? (row[4] || '') : formatNumber(row[4]);
-                
+                const valueDisplay = isHeader ? rawValue : formatNumber(rawValue);
+
                 return `
-                    <div class="${isHeader ? 'bg-green-600 text-white' : 'bg-white text-gray-800'} p-3 rounded-lg border border-gray-100 shadow-sm text-xs">
-                        <div class="flex justify-between items-center">
-                            <span class="font-bold ${isHeader ? 'text-white' : 'text-gray-900'}">${label}</span>
-                            <span class="font-medium font-mono">${valueDisplay}</span>
-                        </div>
+                    <div class="data-row ${isHeader ? 'bg-blue-600 text-white font-bold' : ''}">
+                        <span class="${isHeader ? 'text-white' : 'text-gray-700 font-medium'}">${label}</span>
+                        <span class="${isHeader ? 'text-white' : 'text-blue-600 font-bold'} font-mono">${valueDisplay}</span>
                     </div>
                 `;
             }).join('');
