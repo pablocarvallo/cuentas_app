@@ -29,7 +29,7 @@
         .tab-content { display: none; height: 100%; }
         .tab-content.active { display: block; }
         .active-tab-btn { color: #2563eb; border-top: 2px solid #2563eb; background-color: #eff6ff; }
-        .pb-safe { padding-bottom: calc(var(--safe-bottom) + 80px); }
+        .pb-safe { padding-bottom: var(--safe-bottom); }
         
         .data-row {
             padding: 0.75rem 0.75rem;
@@ -60,11 +60,18 @@
         ::-webkit-scrollbar { display: none; }
 
         /* Contenedor principal para permitir gestos */
-        #swipe-container {
+        /* Línea 56 - index.html */
+#swipe-container {
+    height: calc(100vh - var(--safe-top) - var(--safe-bottom) - 10rem); /* Aumentado de 7rem a 10rem */
+    overflow-y: auto;
+    touch-action: pan-y;
+    padding-bottom: 2rem; /* Margen extra interno para asegurar el scroll */
+}
+      /*  #swipe-container {
             height: calc(100vh - var(--safe-top) - var(--safe-bottom) - 7rem);
             overflow-y: auto;
             touch-action: pan-y; /* Permite scroll vertical pero detectaremos horizontal por JS */
-        }
+        }*/
     </style>
 </head>
 <body class="h-screen flex flex-col">
