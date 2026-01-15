@@ -15,38 +15,20 @@
         :root {
             --safe-top: env(safe-area-inset-top);
             --safe-bottom: env(safe-area-inset-bottom);
-            --header-height: 50px;
         }
         body {
             -webkit-tap-highlight-color: transparent;
             user-select: none;
+            padding-top: calc(var(--safe-top) + 2rem);
             background-color: #f9fafb;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             font-size: 18px;
             overflow: hidden;
             height: 100vh;
-            margin: 0;
-            padding: 0;
         }
         
-        /* Header fijo para el botón de refrescar */
-        header {
-            height: calc(var(--safe-top) + var(--header-height));
-            background-color: #f9fafb;
-            display: flex;
-            align-items: flex-end;
-            justify-content: flex-end;
-            padding: 0 1rem 0.5rem 0;
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            z-index: 100;
-        }
-
         #swipe-container {
-            margin-top: calc(var(--safe-top) + var(--header-height));
-            height: calc(100vh - var(--safe-top) - var(--header-height) - 5rem - var(--safe-bottom));
+            height: calc(100vh - var(--safe-top) - 2rem - 5rem - var(--safe-bottom));
             overflow-y: auto;
             -webkit-overflow-scrolling: touch;
             touch-action: pan-y;
@@ -81,45 +63,16 @@
             flex-shrink: 0;
             text-align: right;
         }
-
-        /* Ajuste del botón para que no flote sobre el contenido */
-        .refresh-btn {
-            background: white;
-            padding: 6px;
-            border-radius: 50%;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-            border: 1px solid #e5e7eb;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .refresh-btn:active { transform: scale(0.9); }
         
-        /* Asegurar que el header pegajoso de las tablas respete la nueva posición */
-        .sticky-header {
-            position: sticky;
-            top: 0;
-            z-index: 10;
-        }
-
         ::-webkit-scrollbar { display: none; }
     </style>
 </head>
 <body class="flex flex-col">
 
-    <header>
-        <button onclick="fetchData()" class="refresh-btn" aria-label="Refrescar">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/>
-            </svg>
-        </button>
-    </header>
-
     <main id="swipe-container" class="flex-grow">
         <div id="loading" class="flex flex-col items-center justify-center py-20">
             <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mb-2"></div>
-            <p class="text-gray-500 text-sm">Cargando datos...</p>
+            <p class="text-gray-500 text-sm">Cargando...</p>
         </div>
         
         <div id="tab1" class="tab-content active"><div id="content1" class="bg-white pb-safe-extra"></div></div>
@@ -146,7 +99,7 @@
     <script>
         const URLS = {
             tab1: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT5uXYuDRWuBezPr8wkXCc07mT2DaJQxgYgw0z90JDlS58Io7efeB7KhUpOiALhBtjITBJnNUWJHEKt/pub?gid=189610331&single=true&output=csv',
-            tab2: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT5uXYuDRWuBezPr8wkXCc07mT2DaJQxgYgw0z90JDlS58Io7efeB7KhUpOiALhBtjITBJnNUWJHEKt/pub?gid=70744574&single=true&output=csv',
+            tab2: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT5uXYuDRWuBezPr8wkXCc07mT2DaJQxgYgw0z90JDlS58Io7efeB7KhUpOiALhBtjITBJnNUWJHEKt/pub?gid=1170744574&single=true&output=csv',
             tab3: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT5uXYuDRWuBezPr8wkXCc07mT2DaJQxgYgw0z90JDlS58Io7efeB7KhUpOiALhBtjITBJnNUWJHEKt/pub?gid=878224959&single=true&output=csv'
         };
 
@@ -225,34 +178,27 @@
         }
 
         async function fetchData() {
-            document.getElementById('loading').style.display = 'flex';
-            document.getElementById('loading').innerHTML = `
-                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mb-2"></div>
-                <p class="text-gray-500 text-sm">Actualizando...</p>
-            `;
-            
             try {
-                const cacheBuster = `&t=${new Date().getTime()}`;
-                
                 const [resResumen, resTC, resMaster] = await Promise.all([
-                    fetch(URLS.tab1 + cacheBuster).then(r => r.text()),
-                    fetch(URLS.tab2 + cacheBuster).then(r => r.text()),
-                    fetch(URLS.tab3 + cacheBuster).then(r => r.text())
+                    fetch(URLS.tab1).then(r => r.text()),
+                    fetch(URLS.tab2).then(r => r.text()),
+                    fetch(URLS.tab3).then(r => r.text())
                 ]);
 
                 const csvResumen = parseCSV(resResumen);
                 const csvTC = parseCSV(resTC);
                 const csvMaster = parseCSV(resMaster);
 
-                renderUnified(csvResumen.slice(0, 9), 'content1', 3, 4);
-                renderUnified(csvTC.slice(0, 11), 'content2', 0, 1);
+                // Renderizados con límites solicitados
+                renderUnified(csvResumen.slice(0, 8), 'content1', 3, 4); // Límite fila 8
+                renderUnified(csvTC.slice(0, 11), 'content2', 0, 1);    // Límite fila 11
                 renderUnified(csvMaster.slice(0, 200), 'content3', 0, 1);
                 renderUnified(csvMaster.slice(0, 200), 'content4', 3, 4);
 
                 document.getElementById('loading').style.display = 'none';
             } catch (error) {
                 console.error('Error:', error);
-                document.getElementById('loading').innerHTML = `<div class="p-6 text-red-600 text-center">Error de red. Reintente.</div>`;
+                document.getElementById('loading').innerHTML = `<div class="p-6 text-red-600 text-center">Error de red</div>`;
             }
         }
 
@@ -265,7 +211,7 @@
                 const isHeader = index === 0;
                 const valueDisplay = isHeader ? rawValue : formatNumber(rawValue);
                 return `
-                    <div class="data-row ${isHeader ? 'bg-blue-600 text-white font-bold sticky-header' : ''}">
+                    <div class="data-row ${isHeader ? 'bg-blue-600 text-white font-bold sticky top-0' : ''}">
                         <span class="truncate-cell ${isHeader ? 'text-white' : 'text-gray-700 font-medium'}">${label}</span>
                         <span class="value-cell ${isHeader ? 'text-white' : 'text-blue-600 font-bold'} font-mono">${valueDisplay}</span>
                     </div>
