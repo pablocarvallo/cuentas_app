@@ -19,7 +19,7 @@
         body {
             -webkit-tap-highlight-color: transparent;
             user-select: none;
-            padding-top: calc(var(--safe-top) + 3.5rem);
+            padding-top: calc(var(--safe-top) + 2rem);
             background-color: #f9fafb;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             font-size: 18px;
@@ -27,30 +27,14 @@
             height: 100vh;
         }
         
-        /* Cabecera con botón refresh */
-        .header-bar {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: calc(var(--safe-top) + 3.5rem);
-            background: white;
-            display: flex;
-            align-items: flex-end;
-            justify-content: space-between;
-            padding: 0 1rem 0.5rem 1rem;
-            z-index: 100;
-            border-bottom: 1px solid #e5e7eb;
-        }
-
         #swipe-container {
-            height: calc(100vh - var(--safe-top) - 3.5rem - 5rem - var(--safe-bottom));
+            height: calc(100vh - var(--safe-top) - 2rem - 5rem - var(--safe-bottom));
             overflow-y: auto;
             -webkit-overflow-scrolling: touch;
             touch-action: pan-y;
         }
 
-        .tab-content { display: none; height: 100%; width: 100%; }
+        .tab-content { display: none; }
         .tab-content.active { display: block; }
         
         .active-tab-btn { color: #2563eb; border-top: 2px solid #2563eb; background-color: #eff6ff; }
@@ -80,82 +64,46 @@
             text-align: right;
         }
         
-        .chart-container {
-            width: 100%;
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 10px;
-            background: white;
-        }
-
-        iframe {
-            width: 100%;
-            height: 450px;
-            border: none;
-            border-radius: 8px;
-        }
-        
         ::-webkit-scrollbar { display: none; }
-
-        /* Animación para el icono de carga en el botón */
-        @keyframes spin {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
-        }
-        .spinning { animation: spin 0.6s linear infinite; }
     </style>
 </head>
 <body class="flex flex-col">
 
-    <header class="header-bar">
-        <span class="font-bold text-gray-800">MiData</span>
-        <button id="refresh-btn" onclick="manualRefresh()" class="p-2 bg-blue-50 text-blue-600 rounded-full active:scale-90 transition-transform">
-            <svg id="refresh-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"></path><path d="M21 3v5h-5"></path></svg>
-        </button>
-    </header>
-
     <main id="swipe-container" class="flex-grow">
         <div id="loading" class="flex flex-col items-center justify-center py-20">
             <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mb-2"></div>
-            <p class="text-gray-500 text-sm">Cargando datos...</p>
+            <p class="text-gray-500 text-sm">Cargando...</p>
         </div>
         
         <div id="tab1" class="tab-content active"><div id="content1" class="bg-white pb-safe-extra"></div></div>
         <div id="tab2" class="tab-content"><div id="content2" class="bg-white pb-safe-extra"></div></div>
         <div id="tab3" class="tab-content"><div id="content3" class="bg-white pb-safe-extra"></div></div>
         <div id="tab4" class="tab-content"><div id="content4" class="bg-white pb-safe-extra"></div></div>
-        
-        <div id="tab5" class="tab-content">
-            <div class="chart-container">
-                <iframe 
-                    id="iframe-graf"
-                    src="https://docs.google.com/spreadsheets/d/e/2PACX-1vT5uXYuDRWuBezPr8wkXCc07mT2DaJQxgYgw0z90JDlS58Io7efeB7KhUpOiALhBtjITBJnNUWJHEKt/pubchart?oid=2119780974&format=interactive">
-                </iframe>
-                <button onclick="refreshChart()" class="mt-4 px-4 py-2 bg-gray-100 text-gray-600 rounded-lg text-xs font-bold uppercase active:bg-gray-200">
-                    Actualizar Gráfico
-                </button>
-            </div>
-        </div>
     </main>
 
     <nav class="fixed bottom-0 left-0 right-0 bg-white border-t flex justify-around items-center h-20 shadow-[0_-2px_10px_rgba(0,0,0,0.05)] z-50" style="padding-bottom: var(--safe-bottom);">
-        <button onclick="switchTab('tab1')" id="btn-tab1" class="flex flex-col items-center justify-center w-full h-full active-tab-btn text-[9px] font-bold uppercase">Resumen</button>
-        <button onclick="switchTab('tab2')" id="btn-tab2" class="flex flex-col items-center justify-center w-full h-full text-gray-400 border-l text-[9px] font-bold uppercase">TC</button>
-        <button onclick="switchTab('tab3')" id="btn-tab3" class="flex flex-col items-center justify-center w-full h-full text-gray-400 border-l text-[9px] font-bold uppercase">Master</button>
-        <button onclick="switchTab('tab4')" id="btn-tab4" class="flex flex-col items-center justify-center w-full h-full text-gray-400 border-l text-[9px] font-bold uppercase">Lider</button>
-        <button onclick="switchTab('tab5')" id="btn-tab5" class="flex flex-col items-center justify-center w-full h-full text-gray-400 border-l text-[9px] font-bold uppercase">Graf</button>
+        <button onclick="switchTab('tab1')" id="btn-tab1" class="flex flex-col items-center justify-center w-full h-full active-tab-btn transition-colors">
+            <span class="text-[10px] font-bold uppercase">Resumen</span>
+        </button>
+        <button onclick="switchTab('tab2')" id="btn-tab2" class="flex flex-col items-center justify-center w-full h-full text-gray-400 transition-colors border-l">
+            <span class="text-[10px] font-bold uppercase">TC</span>
+        </button>
+        <button onclick="switchTab('tab3')" id="btn-tab3" class="flex flex-col items-center justify-center w-full h-full text-gray-400 transition-colors border-l">
+            <span class="text-[10px] font-bold uppercase">Master</span>
+        </button>
+        <button onclick="switchTab('tab4')" id="btn-tab4" class="flex flex-col items-center justify-center w-full h-full text-gray-400 transition-colors border-l">
+            <span class="text-[10px] font-bold uppercase">LiderBCI</span>
+        </button>
     </nav>
 
     <script>
-        const BASE_URLS = {
+        const URLS = {
             tab1: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT5uXYuDRWuBezPr8wkXCc07mT2DaJQxgYgw0z90JDlS58Io7efeB7KhUpOiALhBtjITBJnNUWJHEKt/pub?gid=189610331&single=true&output=csv',
             tab2: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT5uXYuDRWuBezPr8wkXCc07mT2DaJQxgYgw0z90JDlS58Io7efeB7KhUpOiALhBtjITBJnNUWJHEKt/pub?gid=1170744574&single=true&output=csv',
             tab3: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT5uXYuDRWuBezPr8wkXCc07mT2DaJQxgYgw0z90JDlS58Io7efeB7KhUpOiALhBtjITBJnNUWJHEKt/pub?gid=878224959&single=true&output=csv'
         };
 
-        const tabs = ['tab1', 'tab2', 'tab3', 'tab4', 'tab5'];
+        const tabs = ['tab1', 'tab2', 'tab3', 'tab4'];
         let currentTabIndex = 0;
 
         function switchTab(tabId) {
@@ -168,26 +116,13 @@
             document.getElementById(tabId).classList.add('active');
             document.getElementById('btn-' + tabId).classList.add('active-tab-btn');
             document.getElementById('swipe-container').scrollTop = 0;
-            
-            if (tabId === 'tab5') refreshChart();
-        }
-
-        function refreshChart() {
-            const ifr = document.getElementById('iframe-graf');
-            const baseUrl = ifr.src.split('&t=')[0];
-            ifr.src = baseUrl + "&t=" + new Date().getTime();
-        }
-
-        async function manualRefresh() {
-            const icon = document.getElementById('refresh-icon');
-            icon.classList.add('spinning');
-            await fetchData();
-            refreshChart();
-            setTimeout(() => icon.classList.remove('spinning'), 600);
         }
 
         let touchstartX = 0;
+        let touchendX = 0;
         let touchstartY = 0;
+        let touchendY = 0;
+
         const gestureZone = document.getElementById('swipe-container');
 
         gestureZone.addEventListener('touchstart', e => {
@@ -196,29 +131,46 @@
         }, {passive: true});
 
         gestureZone.addEventListener('touchend', e => {
-            const dx = e.changedTouches[0].screenX - touchstartX;
-            const dy = e.changedTouches[0].screenY - touchstartY;
-            if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 60) {
-                if (dx < 0 && currentTabIndex < tabs.length - 1) switchTab(tabs[currentTabIndex + 1]);
-                else if (dx > 0 && currentTabIndex > 0) switchTab(tabs[currentTabIndex - 1]);
-            }
+            touchendX = e.changedTouches[0].screenX;
+            touchendY = e.changedTouches[0].screenY;
+            handleGesture();
         }, {passive: true});
+
+        function handleGesture() {
+            const deltaX = touchendX - touchstartX;
+            const deltaY = touchendY - touchstartY;
+            if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > 60) {
+                if (deltaX < 0) {
+                    if (currentTabIndex < tabs.length - 1) switchTab(tabs[currentTabIndex + 1]);
+                } else {
+                    if (currentTabIndex > 0) switchTab(tabs[currentTabIndex - 1]);
+                }
+            }
+        }
 
         function formatNumber(val) {
             if (!val) return '';
             const cleanVal = val.toString().trim().replace(/[$.]/g, '').replace(',', '.');
             const num = parseFloat(cleanVal);
-            return isNaN(num) ? val : new Intl.NumberFormat('de-DE').format(num);
+            if (isNaN(num)) return val;
+            return new Intl.NumberFormat('de-DE').format(num);
         }
 
         function parseCSV(text) {
-            return text.split(/\r?\n/).map(line => {
+            const lines = text.split(/\r?\n/);
+            return lines.map(line => {
                 const values = [];
-                let current = '', inQuotes = false;
-                for (let char of line) {
+                let current = '';
+                let inQuotes = false;
+                for (let i = 0; i < line.length; i++) {
+                    const char = line[i];
                     if (char === '"') inQuotes = !inQuotes;
-                    else if (char === ',' && !inQuotes) { values.push(current.trim()); current = ''; }
-                    else current += char;
+                    else if (char === ',' && !inQuotes) {
+                        values.push(current.trim());
+                        current = '';
+                    } else {
+                        current += char;
+                    }
                 }
                 values.push(current.trim());
                 return values;
@@ -227,26 +179,26 @@
 
         async function fetchData() {
             try {
-                // Añadimos cache-buster para forzar descarga fresca
-                const t = new Date().getTime();
-                const results = await Promise.all([
-                    fetch(`${BASE_URLS.tab1}&cache=${t}`).then(r => r.text()),
-                    fetch(`${BASE_URLS.tab2}&cache=${t}`).then(r => r.text()),
-                    fetch(`${BASE_URLS.tab3}&cache=${t}`).then(r => r.text())
+                const [resResumen, resTC, resMaster] = await Promise.all([
+                    fetch(URLS.tab1).then(r => r.text()),
+                    fetch(URLS.tab2).then(r => r.text()),
+                    fetch(URLS.tab3).then(r => r.text())
                 ]);
 
-                const data1 = parseCSV(results[0]);
-                const data2 = parseCSV(results[1]);
-                const data3 = parseCSV(results[2]);
+                const csvResumen = parseCSV(resResumen);
+                const csvTC = parseCSV(resTC);
+                const csvMaster = parseCSV(resMaster);
 
-                renderUnified(data1.slice(0, 7), 'content1', 3, 4);
-                renderUnified(data2.slice(0, 11), 'content2', 0, 1);
-                renderUnified(data3.slice(0, 200), 'content3', 0, 1);
-                renderUnified(data3.slice(0, 200), 'content4', 3, 4);
+                // Renderizados con límites solicitados
+                renderUnified(csvResumen.slice(0, 8), 'content1', 3, 4); // Límite fila 8
+                renderUnified(csvTC.slice(0, 11), 'content2', 0, 1);    // Límite fila 11
+                renderUnified(csvMaster.slice(0, 200), 'content3', 0, 1);
+                renderUnified(csvMaster.slice(0, 200), 'content4', 3, 4);
 
                 document.getElementById('loading').style.display = 'none';
             } catch (error) {
-                document.getElementById('loading').innerHTML = `<div class="p-6 text-red-600">Error de red</div>`;
+                console.error('Error:', error);
+                document.getElementById('loading').innerHTML = `<div class="p-6 text-red-600 text-center">Error de red</div>`;
             }
         }
 
@@ -254,13 +206,14 @@
             const container = document.getElementById(containerId);
             container.innerHTML = rows.map((row, index) => {
                 const label = row[labelIdx] || "";
-                const val = row[valueIdx] || "";
-                if(!label && !val) return "";
-                const isH = index === 0;
+                const rawValue = row[valueIdx] || "";
+                if(!label && !rawValue) return "";
+                const isHeader = index === 0;
+                const valueDisplay = isHeader ? rawValue : formatNumber(rawValue);
                 return `
-                    <div class="data-row ${isH ? 'bg-blue-600 text-white font-bold sticky top-0' : ''}">
-                        <span class="truncate-cell">${label}</span>
-                        <span class="value-cell ${isH ? '' : 'text-blue-600'} font-mono">${isH ? val : formatNumber(val)}</span>
+                    <div class="data-row ${isHeader ? 'bg-blue-600 text-white font-bold sticky top-0' : ''}">
+                        <span class="truncate-cell ${isHeader ? 'text-white' : 'text-gray-700 font-medium'}">${label}</span>
+                        <span class="value-cell ${isHeader ? 'text-white' : 'text-blue-600 font-bold'} font-mono">${valueDisplay}</span>
                     </div>
                 `;
             }).join('');
