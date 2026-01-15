@@ -146,7 +146,7 @@
     <script>
         const URLS = {
             tab1: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT5uXYuDRWuBezPr8wkXCc07mT2DaJQxgYgw0z90JDlS58Io7efeB7KhUpOiALhBtjITBJnNUWJHEKt/pub?gid=189610331&single=true&output=csv',
-            tab2: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT5uXYuDRWuBezPr8wkXCc07mT2DaJQxgYgw0z90JDlS58Io7efeB7KhUpOiALhBtjITBJnNUWJHEKt/pub?gid=1170744574&single=true&output=csv',
+            tab2: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT5uXYuDRWuBezPr8wkXCc07mT2DaJQxgYgw0z90JDlS58Io7efeB7KhUpOiALhBtjITBJnNUWJHEKt/pub?gid=70744574&single=true&output=csv',
             tab3: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT5uXYuDRWuBezPr8wkXCc07mT2DaJQxgYgw0z90JDlS58Io7efeB7KhUpOiALhBtjITBJnNUWJHEKt/pub?gid=878224959&single=true&output=csv'
         };
 
@@ -244,7 +244,7 @@
                 const csvTC = parseCSV(resTC);
                 const csvMaster = parseCSV(resMaster);
 
-                renderUnified(csvResumen.slice(0, 8), 'content1', 3, 4);
+                renderUnified(csvResumen.slice(0, 9), 'content1', 3, 4);
                 renderUnified(csvTC.slice(0, 11), 'content2', 0, 1);
                 renderUnified(csvMaster.slice(0, 200), 'content3', 0, 1);
                 renderUnified(csvMaster.slice(0, 200), 'content4', 3, 4);
